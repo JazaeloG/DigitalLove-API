@@ -1,10 +1,11 @@
 from pathlib import Path
+from decouple import config
 
 # Construir rutas de archivos de forma segura
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Secret de seguridad ( manetener oculta o en un archivo .env)
-SECRET_KEY = 'django-insecure-&ut1j4@mm#1l^u=4)9!w(7r&=6tq09!x$i1!ywxytaya!g9l0r'
+SECRET_KEY = config('PROD_SECRET_KEY', default='')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -22,6 +23,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'rest_framework',
+    'coreapi',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -60,9 +64,16 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': config("PROD_DATABASE", default=''),
+        'USER': config("PROD_USER", default=''),
+        'PASSWORD': config("PROD_PASSWORD", default=''),
+        'HOST': config("PROD_HOST", default=''),
+        'PORT': config("PROD_PORT", default=''),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    },
 }
 
 
@@ -106,3 +117,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+}
