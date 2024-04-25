@@ -4,9 +4,11 @@ from api.models import Usuario, UsuarioAdministrador
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = '__all__'
+        exclude = ('user','password')
+        
 
 class UsuarioAdministradorSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioAdministrador
-        fields = '__all__'
+        exclude = ('password', 'user')
+        

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
     'coreapi',
     'api',
 ]
@@ -65,20 +66,16 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config("PROD_DATABASE", default=''),
-        'USER': config("PROD_USER", default=''),
-        'PASSWORD': config("PROD_PASSWORD", default=''),
-        'HOST': config("PROD_HOST", default=''),
-        'PORT': config("PROD_PORT", default=''),
+        'NAME': 'digitalbd',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': 5435,
         'OPTIONS': {
-            'sslmode': 'require',
+            'sslmode': 'disable',
         },
     },
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -118,6 +115,12 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Configuracion de CORS
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Configuracion de REST_FRAMEWORK
+
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 
+        'rest_framework.schemas.coreapi.AutoSchema',
 }
