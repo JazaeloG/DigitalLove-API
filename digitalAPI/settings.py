@@ -66,13 +66,13 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'digitalbd',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': 5435,
+        'NAME': 'koyebdb',
+        'USER': 'admin',
+        'PASSWORD': 'Hkyjm4ZUgWX0',
+        'HOST': 'ep-sparkling-silence-a2htxk8z.eu-central-1.pg.koyeb.app',
+        'PORT': 5432,
         'OPTIONS': {
-            'sslmode': 'disable',
+            'sslmode': 'require',
         },
     },
 }
