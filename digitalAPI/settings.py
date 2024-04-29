@@ -16,6 +16,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -27,6 +28,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'coreapi',
     'api',
+    'chatApp',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -124,3 +127,5 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 
         'rest_framework.schemas.coreapi.AutoSchema',
 }
+
+ASGI_APPLICATION = 'digitalAPI.asgi.application'
