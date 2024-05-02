@@ -129,3 +129,9 @@ REST_FRAMEWORK = {
 }
 
 ASGI_APPLICATION = 'digitalAPI.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}

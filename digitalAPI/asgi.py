@@ -1,23 +1,17 @@
 import os
-import sys
-from pathlib import Path
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter
-from chatApp import routing
-
-ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent
-sys.path.append(str(ROOT_DIR / "conversa_dj"))
+import chatApp.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'digitalAPI.settings')
 
-application = get_asgi_application()
- 
-from channels.routing import ProtocolTypeRouter, URLRouter 
- 
- 
-application = ProtocolTypeRouter(
-    {
-        "http": get_asgi_application(),
-        "websocket": URLRouter(routing.websocket_urlpatterns),
-    }
-)
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            chatApp.routing.websocket_urlpatterns
+        )
+    ),
+})
+
