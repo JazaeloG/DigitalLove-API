@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config
+from datetime import timedelta
 
 # Construir rutas de archivos de forma segura
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -124,8 +125,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Configuracion de REST_FRAMEWORK
 
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 
-        'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 ASGI_APPLICATION = 'digitalAPI.asgi.application'
