@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'api',
     'chatApp',
     'channels',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +129,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 ASGI_APPLICATION = 'digitalAPI.asgi.application'
@@ -137,4 +138,13 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer'
     }
+}
+
+AUTH_USER_MODEL = 'api.Usuario'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API DigitalLove',
+    'DESCRIPTION': 'API de DigitalLove',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }

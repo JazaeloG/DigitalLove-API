@@ -1,11 +1,9 @@
 from django.db import models
 from api.models import Usuario
 
-class Chat(models.Model):
-    usuarios = models.ManyToManyField(Usuario, related_name='chats')
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=100, blank=True, null=True)
 
-class Message(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.nombre
