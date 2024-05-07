@@ -4,4 +4,9 @@ from ..models import Like
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ['sender_id', 'receiver_id']
+        fields = ['envia', 'recibe']
+
+class MatchSerializer(serializers.Serializer):
+    envia_id = serializers.IntegerField()
+    recibe_id = serializers.IntegerField()
+    accion = serializers.BooleanField()
