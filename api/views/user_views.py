@@ -102,7 +102,6 @@ def loginAdministrador(request):
 
 @extend_schema(methods=['GET'], tags=['Usuario'], description='Obtener usuarios tipo USUARIO', responses={200: UsuarioSerializer})
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_usuarios_usuario(request):
     usuarios = Usuario.objects.filter(tipoUsuario=TipoUsuario.USUARIO.value)
     serializer = UsuarioSerializer(usuarios, many=True)
@@ -110,7 +109,6 @@ def get_usuarios_usuario(request):
 
 @extend_schema(methods=['GET'], tags=['Administrador'], description='Obtener usuarios tipo ADMIN', responses={200: UsuarioSerializer})
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_usuarios_admin(request):
     usuarios = Usuario.objects.filter(tipoUsuario=TipoUsuario.ADMIN.value)
     serializer = UsuarioAdminSerializer(usuarios, many=True)
@@ -123,6 +121,8 @@ def get_usuarios_admin(request):
     parameters=[OpenApiParameter(name='usuario_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)], 
     responses={200: ExitoUsuario.USUARIO_BLOQUEADO.value}
 )
+
+@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: ExitoUsuario.USUARIO_BLOQUEADO.value})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def bloquear_usuario(request, usuario_id):
@@ -140,6 +140,7 @@ def bloquear_usuario(request, usuario_id):
 
 ## Patch Methods
 
+@extend_schema(methods=['PATCH'], tags=['Usuario'], description='Actualizar un usuario', request=UsuarioSerializer, responses={200: ExitoUsuario.USUARIO_ACTUALIZADO.value})
 @api_view(['PATCH'])
 def actualizar_usuario(request, pk):
     try:

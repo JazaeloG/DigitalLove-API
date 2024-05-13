@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'digitaldb',
+        'NAME': 'digitalbd',
         'USER': 'postgres',
         'PASSWORD': 'password',
         'HOST': 'localhost',
-        'PORT': 5432
+        'PORT': 5435
     },
 }
 

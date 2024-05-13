@@ -21,11 +21,11 @@ urlpatterns = [
     path(r'usuariosAdmin/', user_views.get_usuarios_admin),
     path(r'notificaciones/<int:usuario_id>/', notification_views.listar_notificaciones, name='listar_notificaciones'),
     path(r'enviarNotificacion/<int:user_id>/', notification_views.enviar_notificacion, name='enviar_notificacion'),
-    path(r'like/', match_views.like_user, name='like_user'),
+    path(r'enviarLike/', match_views.like_user, name='like_user'),
     path(r'responder_like/', match_views.respond_to_like, name='responder_like'),
     path(r'token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path(r'token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path(r'actualizarUsuario/<int:usuario_id>/', user_views.actualizar_usuario, name='actualizar_usuario'),
-    path(r'lista-chats/<int:usuario_id>/', chatList_views.as_view(), name='lista-chats-usuario'),
-
+    path(r'mensajesAnteriores/<int:chat_personal_id>/', chatList_views.obtener_mensajes_anteriores, name='obtener_mensajes_anteriores'),
+    path(r'chatsUsuario/<int:usuario_id>/', chatList_views.get_user_chats, name='get_userChats')
 ]

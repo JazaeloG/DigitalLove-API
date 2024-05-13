@@ -1,16 +1,13 @@
 from rest_framework import serializers
-from ..models import ChatPersonal, ChatGrupal
+from ..models import ChatPersonal, MensajeChat
 
 class ChatPersonalSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatPersonal
         fields = ['id', 'usuario', 'usuario_match', 'fechaRegistro']
 
-class ChatGrupalSerializer(serializers.ModelSerializer):
+class MensajeChatSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatGrupal
-        fields = ['id', 'nombre', 'usuarios', 'fechaRegistro']
+        model = MensajeChat
+        fields = '__all__'
 
-class ChatSerializer(serializers.Serializer):
-    chat_personal = ChatPersonalSerializer(many=True)
-    chat_grupal = ChatGrupalSerializer(many=True)

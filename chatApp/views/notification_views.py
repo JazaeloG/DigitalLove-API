@@ -1,13 +1,14 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.models import Usuario
-from chatApp.models import Notificacion
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from channels.layers import get_channel_layer
-from chatApp.serializers.notification_serializers import NotificacionSerializer
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
+
+from chatApp.models import Notificacion
+from chatApp.serializers.notification_serializers import NotificacionSerializer
 
 @extend_schema(methods=['GET'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Listar notificaciones de un usuario')
 @api_view(['GET'])
@@ -19,7 +20,7 @@ def listar_notificaciones(request, usuario_id):
     except Notificacion.DoesNotExist:
         return Response({'message': 'No se encontraron notificaciones para este usuario'}, status=status.HTTP_404_NOT_FOUND)
     
-@extend_schema(methods=['POST'], responses={200: None}, tags=['Notificaciones'], description='Enviar notificación a un usuario')
+@extend_schema(methods=['POST'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Enviar notificación a un usuario')
 @api_view(['POST'])
 def enviar_notificacion(request, user_id):
     try:
