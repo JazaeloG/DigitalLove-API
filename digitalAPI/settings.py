@@ -67,18 +67,29 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 
 
 # Configuracion de credenciales de la base de datos
+## Prod
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'koyebdb',
+#         'USER': 'admin',
+#         'PASSWORD': 'Hkyjm4ZUgWX0',
+#         'HOST': 'ep-sparkling-silence-a2htxk8z.eu-central-1.pg.koyeb.app',
+#         'PORT': 5432,
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         },
+#     },
+# }
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'koyebdb',
-        'USER': 'admin',
-        'PASSWORD': 'Hkyjm4ZUgWX0',
-        'HOST': 'ep-sparkling-silence-a2htxk8z.eu-central-1.pg.koyeb.app',
-        'PORT': 5432,
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+        'NAME': 'digitaldb',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': 5432
     },
 }
 

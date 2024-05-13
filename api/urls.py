@@ -3,6 +3,7 @@ from rest_framework import routers
 from api.views import user_views, match_views, reporte_views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from chatApp.views import notification_views
+from chatApp.views import chatList_views
 router = routers.DefaultRouter()
 router.register(r'usuarios', user_views.UsuarioViewSet)
 
@@ -24,4 +25,7 @@ urlpatterns = [
     path(r'responder_like/', match_views.respond_to_like, name='responder_like'),
     path(r'token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path(r'token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path(r'actualizarUsuario/<int:usuario_id>/', user_views.actualizar_usuario, name='actualizar_usuario'),
+    path(r'lista-chats/<int:usuario_id>/', chatList_views.as_view(), name='lista-chats-usuario'),
+
 ]

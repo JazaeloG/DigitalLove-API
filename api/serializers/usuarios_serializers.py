@@ -4,7 +4,7 @@ from api.models import Usuario
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        exclude = ('password','last_login')
+        fields = ['usuario', 'nombre', 'apellidoMaterno', 'apellidoPaterno', 'edad', 'ubicacion', 'sexo', 'telefono', 'estado', 'correo', 'password', 'fechaRegistro', 'fotos']
 
 class LoginSerializer(serializers.Serializer):
     usuario = serializers.CharField(max_length=50)
@@ -13,4 +13,4 @@ class LoginSerializer(serializers.Serializer):
 class UsuarioAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id', 'usuario', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaRegistro', 'password']
+        fields = ['id','usuario', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaRegistro', 'password']

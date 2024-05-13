@@ -9,7 +9,7 @@ from django.core.validators import MinLengthValidator, MaxLengthValidator, MinVa
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, email, password=None,tipo_usuario=TipoUsuario.USUARIO.value, **extra_fields):
+    def create_user(self, username, email, password,tipo_usuario=TipoUsuario.USUARIO.value, **extra_fields):
         if not email:
             raise ValueError('El email es obligatorio')
         email = self.normalize_email(email)
@@ -18,7 +18,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
+    def create_superuser(self, username, email, password, **extra_fields):
         extra_fields.setdefault('tipoUsuario', TipoUsuario.ADMIN.value)
         return self.create_user(username, email, password, **extra_fields)
 
@@ -34,12 +34,14 @@ class Usuario(AbstractBaseUser):
     usuario = models.CharField(max_length=50, unique=True, validators=[MinLengthValidator(1), MaxLengthValidator(50)])
     estado = models.CharField(max_length=20, default=EstadoUsuario.ACTIVO.value)
     correo = models.EmailField(max_length=50, validators=[EmailValidator()])
+    password = models.CharField(max_length=255, blank=False, null=False)
     fechaRegistro = models.DateTimeField(auto_now_add=True)
     fotos = models.ImageField(upload_to='fotos/', blank=True)
 
     USERNAME_FIELD = 'usuario'
     EMAIL_FIELD = 'correo'
-    REQUIRED_FIELDS = ['correo']
+    PASSWORD_FIELD = 'password'
+    REQUIRED_FIELDS = ['correo', 'password']
     objects = CustomUserManager()
 
     def __str__(self):

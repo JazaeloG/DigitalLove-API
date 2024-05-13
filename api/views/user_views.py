@@ -5,7 +5,7 @@ from api.enums.estado_usuario import EstadoUsuario
 from api.helpers.login_helper import ErroresLogin, ExitoLogin
 from api.helpers.registro_helper import ExitoRegistro
 from api.helpers.reporte_helper import BloqueoHelper
-from api.helpers.usuario_helper import ExitoUsuario
+from api.helpers.usuario_helper import ExitoUsuario, ErroresUsuario
 from ..serializers.usuarios_serializers import  UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
 from api.models import Usuario
 from rest_framework.response import Response
@@ -137,3 +137,18 @@ def bloquear_usuario(request, usuario_id):
     usuario.save()
 
     return Response({'message': BloqueoHelper.BLOQUEO_REGISTRADO.value}, status=status.HTTP_200_OK)
+
+## Patch Methods
+
+@api_view(['PATCH'])
+def actualizar_usuario(request, pk):
+    try:
+        usuario = Usuario.objects.get(pk=pk)
+    except Usuario.DoesNotExist:
+        return Response({"message": ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = UsuarioSerializer(usuario, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": ExitoUsuario.USUARIO_ACTUALIZADO.value})
+    return Response({"message": ErroresUsuario.USUARIO_NO_ACTUALIZADO.value}, status=status.HTTP_400_BAD_REQUEST)
