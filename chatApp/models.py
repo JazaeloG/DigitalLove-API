@@ -3,9 +3,8 @@ from django.conf import settings
 from django.db.models import Q
 
 # Create your models here.
-class Chat(models.Model):
-    def by_user(self, **kwargs):
-        usuario = kwargs.get('usuario')
+class ChatPersonalManager(models.Manager):
+    def by_user(self, usuario):
         lookup = Q(usuario=usuario) | Q(usuario_match=usuario)
         qs = self.get_queryset().filter(lookup).distinct()
         return qs
@@ -16,7 +15,7 @@ class ChatPersonal(models.Model):
     actualizado = models.DateTimeField(auto_now=True)
     fechaRegistro = models.DateTimeField(auto_now_add=True)
 
-    objects = Chat()
+    objects = ChatPersonalManager()
     class Meta:
         unique_together = ['usuario', 'usuario_match']
 

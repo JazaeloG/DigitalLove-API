@@ -125,7 +125,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
 
     async def send_notification(self, notification_data):
-       
         notificacion = await self.create_notification(notification_data)
         
         await self.channel_layer.send(

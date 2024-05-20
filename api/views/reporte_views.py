@@ -11,19 +11,6 @@ from chatApp.consumers import NotificationConsumer
 from ..serializers.reporte_serializer import ReporteSerializer
 from api.helpers.reporte_helper import ValidacionesReporte
 
-@extend_schema(description='Reportar usuario', responses={201: ReporteSerializer}, tags=['Reporte'], request=ReporteSerializer)
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-async def reportar_usuario(request):
-    serializer = ReporteSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        report_data = serializer.data
-        notification_consumer = NotificationConsumer()
-        await notification_consumer.send_report_notification(report_data)
-
-        return Response({'message': ValidacionesReporte.REPORTE_REGISTRADO.value}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(description='Ver reportes', responses={200: ReporteSerializer}, tags=['Reporte'], request=None)
 @api_view(['GET'])

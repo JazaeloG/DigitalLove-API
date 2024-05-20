@@ -56,8 +56,8 @@ def respond_to_like(request):
     if action: 
         like_instance.aceptado = True
         like_instance.save()
-        Match.objects.create(usuario1_id=sender_id, usuario2_id=receiver_id)
-        ChatPersonal.objects.create(usuario_id=sender_id, usuario_match_id=receiver_id)
+        Match.objects.create(usuario1_id=receiver_id, usuario2_id=sender_id)
+        ChatPersonal.objects.create(usuario_id=receiver_id, usuario_match_id=sender_id) 
         return Response({'message': ExitoLike.MATCH_ACEPTADO.value}, status=status.HTTP_200_OK)
     else:
         like_instance.delete()
