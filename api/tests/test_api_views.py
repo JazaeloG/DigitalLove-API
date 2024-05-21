@@ -75,28 +75,46 @@ class RespondToLikeTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['message'], "El match ya fue aceptado anteriormente") 
 
+from enum import Enum
+from api.enums.motivos_reporte_ import MotivosReporte
+
 class ReportarUsuarioTest(APITestCase):
     def setUp(self):
         self.user = Usuario.objects.create(usuario="testuser", password="testpassword")
+        self.user_reported = Usuario.objects.create(usuario="reporteduser", password="reportedpassword")
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
         self.url = reverse('reportar_usuario')
 
     @patch('chatApp.consumers.NotificationConsumer.send_report_notification')
     def test_reportar_usuario_success(self, mock_send_report_notification):
+
+        fecha_registro_actual = datetime.now().isoformat()
+
         data = {
-            "usuario_reportado_id": self.user.id,
-            "motivo": "Inappropriate behavior"
+            "usuario_reportado_id": self.user_reported.id,
+            "motivo": MotivosReporte.SPAM.value,  
+            "comentario": "Contenido spam",
+            "fechaRegistro": fecha_registro_actual
         }
+        print(data)
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['message'], "Reporte registrado")
-        self.assertTrue(Reporte.objects.filter(usuario_reportado=self.user).exists())
+
+        report = Reporte.objects.get(usuario_reportado=self.user_reported)
+        self.assertIsNotNone(report)
+        self.assertEqual(report.usuario_reportado.id, self.user_reported.id)
+        self.assertEqual(report.motivo, MotivosReporte.SPAM.value)
+        self.assertEqual(report.comentario, "Contenido spam")
+        self.assertIsNotNone(report.fechaRegistro)
+
         mock_send_report_notification.assert_called_once()
 
     def test_reportar_usuario_invalid_data(self):
         data = {
-            "usuario_reportado_id": self.user.id,
+            "usuario_reportado_id": self.user_reported.id,
+            # Falta 'motivo'
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -164,7 +182,16 @@ class RegistrarUsuarioTest(APITestCase):
     def test_registrar_usuario_success(self):
         data = {
             "usuario": "newuser",
-            "password": "newpassword"
+            "password": "newpassword",
+            "nombre": "Nuevo",
+            "apellidoPaterno": "Usuario",
+            "apellidoMaterno": "Test",
+            "edad": 25,
+            "ubicacion": "Ciudad",
+            "sexo": "M",
+            "telefono": "123456789",
+            "estado": "Activo",
+            "correo": "newuser@example.com",
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -287,13 +314,6 @@ class BloquearUsuarioTest(APITestCase):
         url = reverse('bloquear_usuario', kwargs={'usuario_id': 999})
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-from rest_framework.test import APITestCase
-from rest_framework import status
-from api.models import Usuario
-from django.urls import reverse
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.hashers import make_password
 
 class ActualizarUsuarioTest(APITestCase):
     def setUp(self):
