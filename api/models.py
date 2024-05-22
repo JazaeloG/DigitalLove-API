@@ -7,6 +7,7 @@ from api.enums.estados_pais import EstadosMexico
 from api.enums.motivos_reporte_ import MotivosReporte
 from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator, MaxValueValidator, EmailValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from api.enums.cabello_preferencias import CabelloColorPreferencias, CabelloTipoPreferencias
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, usuario, email, password, tipoUsuario=TipoUsuario.USUARIO.value, **extra_fields):
@@ -83,3 +84,22 @@ class Reporte(models.Model):
     
     def __str__(self):
         return self.motivo
+
+class AtributosUsuario(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    caraOvalada = models.BooleanField(default=False)
+    lentes = models.BooleanField(default=False)
+    pielBlanca = models.BooleanField(default=False)
+    colorCabello = models.CharField(max_length=50, default='')
+    tipoCabello = models.CharField(max_length=50, default='')
+
+    def _str_(self):
+        return self.usuario.nombre
+    
+class PreferenciasUsuario(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    conLentes = models.BooleanField(default=False)
+    conCaraOvalada = models.BooleanField(default=False)
+    conPielBlanca = models.BooleanField(default=False)
+    colorCabello = models.CharField(max_length=50, choices=[(cabello.name, cabello.value) for cabello in CabelloColorPreferencias], default=CabelloColorPreferencias.BLACK_HAIR.value)
+    tipoCabello = models.CharField(max_length=50, choices=[(tipo.name, tipo.value) for tipo in CabelloTipoPreferencias], default=CabelloTipoPreferencias.STRAIGHT_HAIR.value)

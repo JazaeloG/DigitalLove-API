@@ -7,9 +7,12 @@ from api.models import Usuario, Reporte
 from django.utils import timezone
 from datetime import datetime
 
-from chatApp.consumers import NotificationConsumer
+from chatApp.consumers import AdminReportConsumer
 from ..serializers.reporte_serializer import ReporteSerializer
 from api.helpers.reporte_helper import ValidacionesReporte
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 @extend_schema(description='Reportar usuario', responses={201: ReporteSerializer}, tags=['Reporte'], request=ReporteSerializer)
 @api_view(['POST'])
@@ -17,13 +20,26 @@ from api.helpers.reporte_helper import ValidacionesReporte
 def reportar_usuario(request):
     serializer = ReporteSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        report_data = serializer.data
-        notification_consumer = NotificationConsumer()
-        notification_consumer.send_report_notification(report_data)  
+        reporte = serializer.save()
+                
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            'admin_reports',  
+            {
+                'type': 'send_report_notification',  
+                'report': {
+                    'usuario_reportado_id': reporte.usuario_reportado.id,
+                    'motivo': reporte.motivo,
+                    'comentario': reporte.comentario,
+                    'fechaRegistro': reporte.fechaRegistro.isoformat()
+                }
+            }
+        )
 
         return Response({'message': ValidacionesReporte.REPORTE_REGISTRADO.value}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(description='Ver reportes', responses={200: ReporteSerializer}, tags=['Reporte'], request=None)
 @api_view(['GET'])

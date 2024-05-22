@@ -8,6 +8,9 @@ from chatApp.models import ChatPersonal
 from ..serializers.match_serializers import LikeSerializer, MatchSerializer
 from drf_spectacular.utils import extend_schema
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 @extend_schema(methods=['POST'], request=LikeSerializer, responses={201: LikeSerializer}, tags=['Match'], description='Dar like a un usuario')
 @api_view(['POST'])
 def like_user(request):
@@ -18,9 +21,11 @@ def like_user(request):
         envia_user = Usuario.objects.get(id=envia_id)
     except Usuario.DoesNotExist:
         return Response({'message': ErrorLike.USUARIO_NO_EXISTE.value}, status=status.HTTP_400_BAD_REQUEST)
+
     existing_like = Like.objects.filter(recibe_id=recibe_id, envia_id=envia_id).first()
     if existing_like:
         return Response({'message': ErrorLike.LIKE_YA_ENVIADO.value}, status=status.HTTP_400_BAD_REQUEST)
+
     like_serializer = LikeSerializer(data={'envia': envia_id, 'recibe': recibe_id})
     if like_serializer.is_valid():
         like_instance = like_serializer.save()
@@ -28,16 +33,22 @@ def like_user(request):
         notification_data = {
             'usuario_envia_id': envia_id,
             'usuario_recibe_id': recibe_id,
-            'mensaje': f'{envia_user} te ha dado like!'
+            'mensaje': f'{envia_user.usuario} te ha dado like!'
         }
 
-        notification_consumer = NotificationConsumer()
-        
-        notification_consumer.send_notification(notification_data)
-        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'notifications_{recibe_id}',
+            {
+                'type': 'notification_message',
+                'message': notification_data['mensaje']
+            }
+        )
+
         return Response({'message': ExitoLike.LIKE_ENVIADO.value}, status=status.HTTP_201_CREATED)
     else:
         return Response(like_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     
 @extend_schema(methods=['POST'], request=MatchSerializer, responses={200: LikeSerializer}, tags=['Match'], description='Responder a un like')

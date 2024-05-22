@@ -164,3 +164,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
+
+# EndPoints de IA
+IA_COMPARACION= 'http://localhost:5001/'
+IA_EXTRACCION= 'http://localhost:5000/'
