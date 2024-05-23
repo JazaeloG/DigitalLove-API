@@ -4,7 +4,7 @@ from api.models import Usuario
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['usuario', 'nombre', 'apellidoMaterno', 'apellidoPaterno', 'edad', 'ubicacion', 'sexo', 'telefono', 'estado', 'correo', 'password', 'fechaRegistro', 'fotos']
+        fields = ['id', 'usuario', 'nombre', 'apellidoMaterno', 'apellidoPaterno', 'edad', 'ubicacion', 'sexo', 'telefono', 'estado', 'correo', 'password', 'fechaRegistro', 'fotos']
 
 class LoginSerializer(serializers.Serializer):
     usuario = serializers.CharField(max_length=50)

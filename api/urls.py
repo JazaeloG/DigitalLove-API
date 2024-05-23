@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from api.views import user_views, match_views, reporte_views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from api.views.estadistica_views import obtener_estadisticas
 from chatApp.views import notification_views
 from chatApp.views import chatList_views
 router = routers.DefaultRouter()
@@ -29,4 +30,5 @@ urlpatterns = [
     path(r'mensajesAnteriores/<int:chat_personal_id>/', chatList_views.obtener_mensajes_anteriores, name='obtener_mensajes_anteriores'),
     path(r'chatsUsuario/<int:usuario_id>/', chatList_views.get_user_chats, name='get_user_chats'),
     path(r'enviarReporteToAdmin/', notification_views.send_report_to_admin, name='send_report_to_admin'),
+    path(r'estadisticas/', obtener_estadisticas, name='obtener_estadisticas'),
 ]
