@@ -33,12 +33,19 @@ def obtener_estadisticas(request):
                                .order_by('-total'))
         estado_con_mas_reportes = reportes_por_estado[0]['usuario_reportado__ubicacion'] if reportes_por_estado else None
 
+        ubicaciones = {estado.value: 0 for estado in EstadosMexico}
+        for usuario in usuarios_por_estado:
+            estado = usuario['ubicacion']
+            total = usuario['total']
+            ubicaciones[estado] = total
+
         data = {
             'total_usuarios': total_usuarios,
             'estado_con_mas_usuarios': estado_con_mas_usuarios,
             'usuarios_activos': usuarios_activos,
             'total_reportes': total_reportes,
             'estado_con_mas_reportes': estado_con_mas_reportes,
+            'ubicaciones': ubicaciones
         }
 
         return Response(data, status=status.HTTP_200_OK)

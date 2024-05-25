@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 from rest_framework.response import Response
 from api.models import AtributosUsuario, Usuario
-from api.serializers.ia_serializers import AtributosSerializer, CompararRostrosSerializer
+from api.serializers.ia_serlializers import AtributosSerializer, CompararRostrosSerializer
 import requests
 
 @extend_schema(
@@ -16,7 +16,7 @@ import requests
     request={
         'multipart/form-data': AtributosSerializer,
     },
-    responses={status.HTTP_200_OK: "Atributos extraidos exitosamente"}
+    responses={200: AtributosSerializer}
 )
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, FileUploadParser])
@@ -70,7 +70,7 @@ def extraer_atributos(request, usuario_id):
     tags=['IA'], 
     description='Comparar rostro con identificacion de usuario',
     request= CompararRostrosSerializer,
-    responses={status.HTTP_200_OK: "Atributos comparados exitosamente"}
+    responses={200: CompararRostrosSerializer}
 )
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, FileUploadParser])

@@ -98,8 +98,8 @@ class AtributosUsuario(models.Model):
     
 class PreferenciasUsuario(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    conLentes = models.BooleanField(default=False)
-    conCaraOvalada = models.BooleanField(default=False)
-    conPielBlanca = models.BooleanField(default=False)
+    conLentes = models.BooleanField(default=False, null=False)
+    conCaraOvalada = models.BooleanField(default=False, null=False)
+    conPielBlanca = models.BooleanField(default=False, null=False)
     colorCabello = models.CharField(max_length=50, choices=[(cabello.name, cabello.value) for cabello in CabelloColorPreferencias], default=CabelloColorPreferencias.BLACK_HAIR.value)
     tipoCabello = models.CharField(max_length=50, choices=[(tipo.name, tipo.value) for tipo in CabelloTipoPreferencias], default=CabelloTipoPreferencias.STRAIGHT_HAIR.value)

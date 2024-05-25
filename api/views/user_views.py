@@ -6,8 +6,8 @@ from api.helpers.login_helper import ErroresLogin, ExitoLogin
 from api.helpers.registro_helper import ExitoRegistro
 from api.helpers.reporte_helper import BloqueoHelper
 from api.helpers.usuario_helper import ExitoUsuario, ErroresUsuario
-from ..serializers.usuarios_serializers import  UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
-from api.models import Usuario
+from ..serializers.usuarios_serializers import  PreferenciasUsuarioSerializer, UsuarioBloquearSerializer, UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
+from api.models import PreferenciasUsuario, Usuario
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.hashers import make_password , check_password
@@ -114,18 +114,9 @@ def get_usuarios_admin(request):
     serializer = UsuarioAdminSerializer(usuarios, many=True)
     return Response(serializer.data)
 
-@extend_schema(
-    methods=['POST'], 
-    tags=['Administrador'], 
-    description='Bloquear un usuario', 
-    parameters=[OpenApiParameter(name='usuario_id', type=OpenApiTypes.INT, location=OpenApiParameter.PATH)], 
-    responses={200: ExitoUsuario.USUARIO_BLOQUEADO.value}
-)
-
-@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: ExitoUsuario.USUARIO_BLOQUEADO.value})
+@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: UsuarioSerializer})
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def bloquear_usuario(request, usuario_id):
+def bloquear_usuario(usuario_id):
     try:
         usuario = Usuario.objects.get(pk=usuario_id)
     except Usuario.DoesNotExist:
@@ -140,7 +131,7 @@ def bloquear_usuario(request, usuario_id):
 
 ## Patch Methods
 
-@extend_schema(methods=['PATCH'], tags=['Usuario'], description='Actualizar un usuario', request=UsuarioSerializer, responses={200: ExitoUsuario.USUARIO_ACTUALIZADO.value})
+@extend_schema(methods=['PATCH'], tags=['Usuario'], description='Actualizar un usuario', request=UsuarioSerializer, responses={200: UsuarioSerializer})
 @api_view(['PATCH'])
 def actualizar_usuario(request, pk):
     try:
@@ -153,3 +144,55 @@ def actualizar_usuario(request, pk):
         serializer.save()
         return Response({"message": ExitoUsuario.USUARIO_ACTUALIZADO.value})
     return Response({"message": ErroresUsuario.USUARIO_NO_ACTUALIZADO.value}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    methods=['POST'],
+    tags=['Preferencias'],
+    description='Registrar o actualizar preferencias de usuario',
+    request=PreferenciasUsuarioSerializer,
+    responses={200: PreferenciasUsuarioSerializer}
+)
+@api_view(['POST'])
+def registrar_preferencias(request, usuario_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        serializer = PreferenciasUsuarioSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        preferencias, created = PreferenciasUsuario.objects.update_or_create(
+            usuario=usuario,
+            defaults=serializer.validated_data
+        )
+
+        return Response({"message": "Preferencias registradas exitosamente"}, status=status.HTTP_200_OK)
+    
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+#patch de preferencias
+@extend_schema(
+    methods=['PATCH'],
+    tags=['Preferencias'],
+    description='Actualizar preferencias de usuario',
+    request=PreferenciasUsuarioSerializer,
+    responses={200: PreferenciasUsuarioSerializer}
+)
+@api_view(['PATCH'])
+def actualizar_preferencias(request, usuario_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        preferencias = PreferenciasUsuario.objects.get(usuario=usuario)
+        serializer = PreferenciasUsuarioSerializer(preferencias, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Preferencias actualizadas exitosamente"}, status=status.HTTP_200_OK)
+    
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except PreferenciasUsuario.DoesNotExist:
+        return Response({'error': 'Preferencias no encontradas para el usuario'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

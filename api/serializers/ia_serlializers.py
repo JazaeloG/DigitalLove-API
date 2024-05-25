@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 class AtributosSerializer(serializers.Serializer):
-    file = serializers.FileField()
+    file = serializers.ImageField()
 
 class CompararRostrosSerializer(serializers.Serializer):
-    imagenRostro = serializers.FileField()
-    imagenIdentificacion = serializers.FileField()
+    imagenRostro = serializers.ImageField()
+    imagenIdentificacion = serializers.ImageField()

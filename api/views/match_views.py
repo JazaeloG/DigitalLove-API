@@ -2,9 +2,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.helpers.match_helper import ErrorLike, ExitoLike
-from ..models import Like, Match, Usuario
+from ..models import AtributosUsuario, Like, Match, PreferenciasUsuario, Usuario
 from chatApp.models import ChatPersonal
-from ..serializers.match_serializers import LikeSerializer, MatchSerializer
+from ..serializers.match_serializers import LikeSerializer, MatchSerializer, UsuarioMatchSerializer
 from drf_spectacular.utils import extend_schema
 
 from channels.layers import get_channel_layer
@@ -110,3 +110,63 @@ def respond_to_like(request):
         )
 
         return Response({'message': ErrorLike.LIKE_DECLINADO.value}, status=status.HTTP_200_OK)
+    
+
+
+    
+@extend_schema(
+    methods=['GET'],
+    tags=['Match'],
+    description='Obtener matchs de un usuario',
+    responses={200: UsuarioMatchSerializer(many=True)}
+)
+@api_view(['GET'])
+def encontrar_usuarios(request, usuario_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        preferencias = PreferenciasUsuario.objects.get(usuario=usuario)
+        
+        # Obtener todos los usuarios excepto el usuario actual
+        atributos_usuarios = AtributosUsuario.objects.exclude(usuario=usuario)
+        
+        # Lista para almacenar usuarios con su puntuación
+        usuarios_puntuacion = []
+
+        for atributos in atributos_usuarios:
+            puntuacion = 0
+            
+            if preferencias.conLentes == atributos.lentes:
+                puntuacion += 1
+            if preferencias.conCaraOvalada == atributos.caraOvalada:
+                puntuacion += 1
+            if preferencias.conPielBlanca == atributos.pielBlanca:
+                puntuacion += 1
+            if preferencias.colorCabello == atributos.colorCabello:
+                puntuacion += 1
+            if preferencias.tipoCabello == atributos.tipoCabello:
+                puntuacion += 1
+
+            usuarios_puntuacion.append({
+                'usuario': atributos.usuario,
+                'puntuacion': puntuacion
+            })
+        
+        # Ordenar la lista por puntuación en orden descendente
+        usuarios_puntuacion.sort(key=lambda x: x['puntuacion'], reverse=True)
+
+        # Añadir la puntuación al serializer
+        usuarios_serializados = []
+        for entry in usuarios_puntuacion:
+            usuario_data = UsuarioMatchSerializer(entry['usuario']).data
+            usuario_data['puntuacion'] = entry['puntuacion']
+            usuarios_serializados.append(usuario_data)
+
+        return Response(usuarios_serializados, status=status.HTTP_200_OK)
+    
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except PreferenciasUsuario.DoesNotExist:
+        return Response({'error': 'Preferencias no encontradas para el usuario'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    

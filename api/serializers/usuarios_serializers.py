@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Usuario
+from api.models import PreferenciasUsuario, Usuario
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,3 +14,11 @@ class UsuarioAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id','usuario', 'nombre', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaRegistro', 'password']
+
+class UsuarioBloquearSerializer(serializers.Serializer):
+    usuario_id = serializers.IntegerField()
+
+class PreferenciasUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PreferenciasUsuario
+        exclude = ['usuario']

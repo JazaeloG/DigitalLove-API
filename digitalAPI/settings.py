@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'digitaldb',
+        'NAME': 'digitalbd',
         'USER': 'postgres',
         'PASSWORD': 'password',
         'HOST': 'localhost',
-        'PORT': 5432
+        'PORT': 5435
     },
 }
 
@@ -158,6 +158,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API de DigitalLove',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True
 }
 
 SIMPLE_JWT = {

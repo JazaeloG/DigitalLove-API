@@ -7,15 +7,15 @@ from django.http import JsonResponse
 from channels.layers import get_channel_layer
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
-
+from api.serializers.usuarios_serializers import UsuarioBloquearSerializer
 from chatApp.models import Notificacion
 from chatApp.serializers.notification_serializers import NotificacionSerializer
 
 @extend_schema(methods=['GET'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Listar notificaciones de un usuario')
 @api_view(['GET'])
-def listar_notificaciones(request, usuario_id):
+def listar_notificaciones(request,usuario_id):
     try:
-        notificaciones = Notificacion.objects.filter(usuario_id=usuario_id)
+        notificaciones = Notificacion.objects.filter(usuario_recibe_id=usuario_id)
         serializer = NotificacionSerializer(notificaciones, many=True)
         return Response(serializer.data)
     except Notificacion.DoesNotExist:
@@ -42,7 +42,13 @@ def enviar_notificacion(request, user_id):
 
     return JsonResponse({'success': True})
 
-@extend_schema(methods=['POST'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Enviar notificación de reporte a todos los administradores')
+@extend_schema(
+    request=NotificacionSerializer,
+    methods=['POST'],
+    responses={200: NotificacionSerializer},
+    tags=['Notificaciones'],
+    description='Enviar notificación de reporte a todos los administradores'
+)
 @api_view(['POST'])
 def send_report_to_admin(request):
     administradores = Usuario.objects.filter(tipoUsuario=TipoUsuario.ADMIN.value)
