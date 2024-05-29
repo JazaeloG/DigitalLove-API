@@ -43,7 +43,6 @@ def reportar_usuario(request):
 
 @extend_schema(description='Ver reportes', responses={200: ReporteSerializer}, tags=['Reporte'], request=None)
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def ver_reportes(request):
     fecha_inicio = request.query_params.get('fecha_inicio', None)
     fecha_fin = request.query_params.get('fecha_fin', None)
@@ -63,7 +62,6 @@ def ver_reportes(request):
 
 @extend_schema(description='Ver reportes de un usuario', responses={200: ReporteSerializer}, tags=['Reporte'], request=None)
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def ver_reportes_usuario(request, usuario_id):
     reportes = Reporte.objects.filter(usuario_reportado_id=usuario_id)
     serializer = ReporteSerializer(reportes, many=True)

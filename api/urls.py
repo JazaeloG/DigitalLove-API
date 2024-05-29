@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import path, include
 from rest_framework import routers
 from api.views import user_views, match_views, reporte_views
@@ -6,6 +7,8 @@ from api.views.estadistica_views import obtener_estadisticas
 from chatApp.views import notification_views
 from chatApp.views import chatList_views
 from api.views import ia_views
+from django.conf.urls.static import static
+
 router = routers.DefaultRouter()
 router.register(r'usuarios', user_views.UsuarioViewSet)
 
@@ -37,4 +40,6 @@ urlpatterns = [
     path(r'registrar_preferencias/<int:usuario_id>/', user_views.registrar_preferencias, name='registrar_preferencias'),
     path(r'encontrar_usuarios/<int:usuario_id>/', match_views.encontrar_usuarios, name='encontrar_usuarios'),
     path(r'actualizar_preferencias/<int:usuario_id>/', user_views.actualizar_preferencias, name='actualizar_preferencias'),
-]
+    path(r'usuario/agregar_foto/<int:usuario_id>/', user_views.agregarFotoUsuario, name='agregar_foto'),
+    path(r'usuario/eliminar_foto/<int:usuario_id>/<int:foto_id>/', user_views.eliminarFotoUsuario, name='eliminar_foto'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

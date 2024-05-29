@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -88,8 +89,8 @@ DATABASES = {
         'NAME': 'digitalbd',
         'USER': 'postgres',
         'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': 5435
+        'HOST': '20.55.201.18',
+        'PORT': 5432
     },
 }
 
@@ -169,3 +170,7 @@ SIMPLE_JWT = {
 # EndPoints de IA
 IA_COMPARACION= 'http://localhost:5001/'
 IA_EXTRACCION= 'http://localhost:5000/'
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

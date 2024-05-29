@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
 from api.enums.estado_usuario import EstadoUsuario
+from api.enums.orientacion_sexual import OrientacionSexual, SexoPreferido
 from api.enums.sexo_usuario import SexoUsuario
 from api.enums.tipo_usuario import TipoUsuario
 from api.enums.estados_pais import EstadosMexico
@@ -24,20 +25,20 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(usuario, email, password, **extra_fields)
 
 class Usuario(AbstractBaseUser):
-    tipoUsuario = models.CharField(max_length=20, default=TipoUsuario.USUARIO.value)
+    tipoUsuario = models.CharField(max_length=20, choices=[( tipo.name, tipo.value)for tipo in TipoUsuario], default=TipoUsuario.USUARIO.value)
     nombre = models.CharField(max_length=50, validators=[MinLengthValidator(1), MaxLengthValidator(50)])
     apellidoMaterno = models.CharField(max_length=50, validators=[MinLengthValidator(1), MaxLengthValidator(50)])
     apellidoPaterno = models.CharField(max_length=50, validators=[MinLengthValidator(1), MaxLengthValidator(50)])
-    edad = models.IntegerField(validators=[MinValueValidator(18), MaxValueValidator(100)], default=18)
+    edad = models.IntegerField(validators=[MinValueValidator(18), MaxValueValidator(99)], default=18)
     ubicacion = models.CharField(max_length=50, choices=[(estado.name, estado.value) for estado in EstadosMexico], default=EstadosMexico.CIUDAD_DE_MEXICO.value)
     sexo = models.CharField(max_length=20, choices=[(sexo.name, sexo.value) for sexo in SexoUsuario], default=SexoUsuario.FEMENINO.value)
     telefono = models.CharField(max_length=15, validators=[MinLengthValidator(10), MaxLengthValidator(15)])
     usuario = models.CharField(max_length=50, unique=True, validators=[MinLengthValidator(1), MaxLengthValidator(50)])
-    estado = models.CharField(max_length=20, default=EstadoUsuario.ACTIVO.value)
+    estado = models.CharField(max_length=20, choices=[( estado.name, estado.value) for estado in EstadoUsuario],default=EstadoUsuario.ACTIVO.value)
     correo = models.EmailField(max_length=50, validators=[EmailValidator()])
     password = models.CharField(max_length=255, blank=False, null=False)
     fechaRegistro = models.DateTimeField(auto_now_add=True)
-    fotos = models.ImageField(upload_to='fotos/', blank=True)
+    orientacionSexual = models.CharField(max_length=20, choices=[(orientacion.name, orientacion.value) for orientacion in OrientacionSexual], default=OrientacionSexual.HETEROSEXUAL.value)
 
     USERNAME_FIELD = 'usuario'
     EMAIL_FIELD = 'correo'
@@ -47,6 +48,14 @@ class Usuario(AbstractBaseUser):
 
     def __str__(self):
         return self.nombre
+
+class FotoUsuario(models.Model):
+    usuario = models.ForeignKey(Usuario, related_name='fotos', on_delete=models.CASCADE)
+    foto = models.ImageField(upload_to='uploads/', blank=True, null=True, validators=[MaxValueValidator(3)])
+
+    def save(self, *args, **kwargs):
+        self.foto.name = f'{self.usuario.usuario}/{self.foto.name}'
+        super().save(*args, **kwargs)
     
 class Like(models.Model):
     envia = models.ForeignKey(Usuario, related_name='like_envia', on_delete=models.CASCADE, null=False)
@@ -103,3 +112,4 @@ class PreferenciasUsuario(models.Model):
     conPielBlanca = models.BooleanField(default=False, null=False)
     colorCabello = models.CharField(max_length=50, choices=[(cabello.name, cabello.value) for cabello in CabelloColorPreferencias], default=CabelloColorPreferencias.BLACK_HAIR.value)
     tipoCabello = models.CharField(max_length=50, choices=[(tipo.name, tipo.value) for tipo in CabelloTipoPreferencias], default=CabelloTipoPreferencias.STRAIGHT_HAIR.value)
+    sexoPreferido = models.CharField(max_length=20, choices=[(sexo.name, sexo.value) for sexo in SexoPreferido], default=SexoPreferido.AMBOS.value)

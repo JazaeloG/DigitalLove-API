@@ -21,7 +21,7 @@ def listar_notificaciones(request,usuario_id):
     except Notificacion.DoesNotExist:
         return Response({'message': 'No se encontraron notificaciones para este usuario'}, status=status.HTTP_404_NOT_FOUND)
     
-@extend_schema(methods=['POST'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Enviar notificación a un usuario')
+@extend_schema(methods=['POST'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Enviar notificación a un usuario', request=NotificacionSerializer)
 @api_view(['POST'])
 def enviar_notificacion(request, user_id):
     try:

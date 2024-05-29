@@ -6,15 +6,15 @@ from api.helpers.login_helper import ErroresLogin, ExitoLogin
 from api.helpers.registro_helper import ExitoRegistro
 from api.helpers.reporte_helper import BloqueoHelper
 from api.helpers.usuario_helper import ExitoUsuario, ErroresUsuario
-from ..serializers.usuarios_serializers import  PreferenciasUsuarioSerializer, UsuarioBloquearSerializer, UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
-from api.models import PreferenciasUsuario, Usuario
+from ..serializers.usuarios_serializers import AgregarFotoSerializer, EliminarFotoSerializer, PreferenciasUsuarioSerializer, UsuarioBloquearSerializer, UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
+from api.models import FotoUsuario, PreferenciasUsuario, Usuario
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from django.contrib.auth.hashers import make_password , check_password
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -22,6 +22,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 @extend_schema(methods=['POST'], request=UsuarioSerializer, responses={201: UsuarioSerializer}, tags=['Usuario'], description='Registrar un usuario')
 @api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser,FileUploadParser])
 def registrarUsuario(request):
     serializer = UsuarioSerializer(data=request.data)
     if serializer.is_valid():
@@ -29,12 +30,20 @@ def registrarUsuario(request):
         hashed_password = make_password(password)
         serializer.validated_data['password'] = hashed_password
         usuario = serializer.save()
-        
-        refresh = RefreshToken.for_user(usuario)
 
-        return Response({'status_code': ExitoRegistro.CODIGO.value,'message': ExitoRegistro.REGISTRO_EXITOSO.value}, status=status.HTTP_201_CREATED)
+        fotos_data = request.FILES.getlist('fotos')
+        for foto_data in fotos_data:
+            FotoUsuario.objects.create(usuario=usuario, foto=foto_data)
+
+        refresh = RefreshToken.for_user(usuario)
+        return Response({
+            'status_code': ExitoRegistro.CODIGO.value,
+            'message': ExitoRegistro.REGISTRO_EXITOSO.value,
+            'usuario': UsuarioSerializer(usuario).data
+        }, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @extend_schema(methods=['POST'], request=LoginSerializer, responses={200: UsuarioSerializer}, tags=['Usuario'], description='Iniciar sesión como usuario')
 @api_view(['POST'])
@@ -114,7 +123,7 @@ def get_usuarios_admin(request):
     serializer = UsuarioAdminSerializer(usuarios, many=True)
     return Response(serializer.data)
 
-@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: UsuarioSerializer})
+@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: UsuarioSerializer}, request=UsuarioBloquearSerializer)
 @api_view(['POST'])
 def bloquear_usuario(usuario_id):
     try:
@@ -128,8 +137,6 @@ def bloquear_usuario(usuario_id):
     usuario.save()
 
     return Response({'message': BloqueoHelper.BLOQUEO_REGISTRADO.value}, status=status.HTTP_200_OK)
-
-## Patch Methods
 
 @extend_schema(methods=['PATCH'], tags=['Usuario'], description='Actualizar un usuario', request=UsuarioSerializer, responses={200: UsuarioSerializer})
 @api_view(['PATCH'])
@@ -165,14 +172,13 @@ def registrar_preferencias(request, usuario_id):
             defaults=serializer.validated_data
         )
 
-        return Response({"message": "Preferencias registradas exitosamente"}, status=status.HTTP_200_OK)
+        return Response({"message": ExitoUsuario.PREFERENCIAS_REGISTRADAS.value}, status=status.HTTP_200_OK)
     
     except Usuario.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': ErroresUsuario.PREFERENCIAS_NO_ENCONTRADAS.value}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-#patch de preferencias
 @extend_schema(
     methods=['PATCH'],
     tags=['Preferencias'],
@@ -188,11 +194,48 @@ def actualizar_preferencias(request, usuario_id):
         serializer = PreferenciasUsuarioSerializer(preferencias, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message": "Preferencias actualizadas exitosamente"}, status=status.HTTP_200_OK)
+        return Response({"message": ExitoUsuario.PREFERENCIAS_ACTUALIZADAS.value}, status=status.HTTP_200_OK)
     
     except Usuario.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)
     except PreferenciasUsuario.DoesNotExist:
-        return Response({'error': 'Preferencias no encontradas para el usuario'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': ErroresUsuario.PREFERENCIAS_NO_ENCONTRADAS.value}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@extend_schema(
+    methods=['DELETE'],
+    tags=['Usuario'],
+    description='Eliminar foto de usuario',
+    request=EliminarFotoSerializer,
+    responses={200: UsuarioSerializer}
+)
+
+@api_view(['DELETE'])
+def eliminarFotoUsuario(request, usuario_id, foto_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        foto = FotoUsuario.objects.get(id=foto_id, usuario=usuario)
+        foto.delete()
+        return Response({'message': ExitoUsuario.FOTO_ELIMINADA.value}, status=status.HTTP_200_OK)
+    except Usuario.DoesNotExist:
+        return Response({'error': ErroresUsuario.USUARIO_NO_ENCONTRADO.value, "usuario": usuario}, status=status.HTTP_404_NOT_FOUND)
+    except FotoUsuario.DoesNotExist:
+        return Response({'error': ErroresUsuario.FOTO_NO_ENCONTRADA.value}, status=status.HTTP_404_NOT_FOUND)
+
+@extend_schema(
+    methods=['POST'],
+    tags=['Usuario'],
+    description='Agregar foto a usuario',
+    request=AgregarFotoSerializer,
+    responses={201: UsuarioSerializer}
+)
+@api_view(['POST'])
+def agregarFotoUsuario(request, usuario_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        foto_data = request.FILES.get('foto')
+        FotoUsuario.objects.create(usuario=usuario, foto=foto_data)
+        return Response({'message': ExitoUsuario.FOTO_REGISTRADA.value}, status=status.HTTP_201_CREATED)
+    except Usuario.DoesNotExist:
+        return Response({'message': ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)

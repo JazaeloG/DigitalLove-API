@@ -1,12 +1,15 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from api.enums.orientacion_sexual import OrientacionSexual, SexoPreferido
+from api.enums.sexo_usuario import SexoUsuario
 from api.helpers.match_helper import ErrorLike, ExitoLike
+from api.helpers.usuario_helper import ErroresUsuario
 from ..models import AtributosUsuario, Like, Match, PreferenciasUsuario, Usuario
 from chatApp.models import ChatPersonal
 from ..serializers.match_serializers import LikeSerializer, MatchSerializer, UsuarioMatchSerializer
 from drf_spectacular.utils import extend_schema
-
+from django.db.models import Q
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -125,11 +128,15 @@ def encontrar_usuarios(request, usuario_id):
     try:
         usuario = Usuario.objects.get(id=usuario_id)
         preferencias = PreferenciasUsuario.objects.get(usuario=usuario)
-        
-        # Obtener todos los usuarios excepto el usuario actual
         atributos_usuarios = AtributosUsuario.objects.exclude(usuario=usuario)
-        
-        # Lista para almacenar usuarios con su puntuación
+        if usuario.orientacionSexual == OrientacionSexual.HETEROSEXUAL.value:
+            if usuario.sexo == SexoUsuario.FEMENINO.value:
+                atributos_usuarios = atributos_usuarios.filter(usuario__sexo=SexoUsuario.MASCULINO.value)
+            elif usuario.sexo == SexoUsuario.MASCULINO.value:
+                atributos_usuarios = atributos_usuarios.filter(usuario__sexo=SexoUsuario.FEMENINO.value)
+        elif usuario.orientacionSexual == OrientacionSexual.HOMOSEXUAL.value:
+            atributos_usuarios = atributos_usuarios.filter(usuario__sexo=usuario.sexo)
+
         usuarios_puntuacion = []
 
         for atributos in atributos_usuarios:
@@ -150,11 +157,7 @@ def encontrar_usuarios(request, usuario_id):
                 'usuario': atributos.usuario,
                 'puntuacion': puntuacion
             })
-        
-        # Ordenar la lista por puntuación en orden descendente
         usuarios_puntuacion.sort(key=lambda x: x['puntuacion'], reverse=True)
-
-        # Añadir la puntuación al serializer
         usuarios_serializados = []
         for entry in usuarios_puntuacion:
             usuario_data = UsuarioMatchSerializer(entry['usuario']).data
@@ -162,11 +165,9 @@ def encontrar_usuarios(request, usuario_id):
             usuarios_serializados.append(usuario_data)
 
         return Response(usuarios_serializados, status=status.HTTP_200_OK)
-    
     except Usuario.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)
     except PreferenciasUsuario.DoesNotExist:
-        return Response({'error': 'Preferencias no encontradas para el usuario'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': ErroresUsuario.PREFERENCIAS_NO_ENCONTRADAS.value}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+        return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
