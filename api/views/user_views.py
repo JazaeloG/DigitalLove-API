@@ -3,9 +3,10 @@ from rest_framework.permissions import IsAuthenticated
 from api.enums.tipo_usuario import TipoUsuario
 from api.enums.estado_usuario import EstadoUsuario
 from api.helpers.login_helper import ErroresLogin, ExitoLogin
-from api.helpers.registro_helper import ExitoRegistro
+from api.helpers.registro_helper import ErroresRegistro, ExitoRegistro
 from api.helpers.reporte_helper import BloqueoHelper
 from api.helpers.usuario_helper import ExitoUsuario, ErroresUsuario
+from api.views.methods.register_methods import validar_formato_telefono
 from ..serializers.usuarios_serializers import AgregarFotoSerializer, EliminarFotoSerializer, PreferenciasUsuarioSerializer, UsuarioBloquearSerializer, UsuarioSerializer, LoginSerializer, UsuarioAdminSerializer
 from api.models import FotoUsuario, PreferenciasUsuario, Usuario
 from rest_framework.response import Response
@@ -22,10 +23,14 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 @extend_schema(methods=['POST'], request=UsuarioSerializer, responses={201: UsuarioSerializer}, tags=['Usuario'], description='Registrar un usuario')
 @api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser,FileUploadParser])
+@parser_classes([MultiPartParser, FormParser, FileUploadParser])
 def registrarUsuario(request):
     serializer = UsuarioSerializer(data=request.data)
     if serializer.is_valid():
+        telefono = request.data.get('telefono')
+        if not validar_formato_telefono(telefono):
+            return Response({'message': ErroresRegistro.FORMATO_TELEFONO.value}, status=status.HTTP_400_BAD_REQUEST)
+
         password = request.data['password']
         hashed_password = make_password(password)
         serializer.validated_data['password'] = hashed_password
