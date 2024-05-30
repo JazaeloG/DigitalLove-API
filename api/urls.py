@@ -42,4 +42,5 @@ urlpatterns = [
     path(r'actualizar_preferencias/<int:usuario_id>/', user_views.actualizar_preferencias, name='actualizar_preferencias'),
     path(r'usuario/agregar_foto/<int:usuario_id>/', user_views.agregarFotoUsuario, name='agregar_foto'),
     path(r'usuario/eliminar_foto/<int:usuario_id>/<int:foto_id>/', user_views.eliminarFotoUsuario, name='eliminar_foto'),
+    path(r'recuperarReportes', notification_views.recuperar_reportes, name='recuperar_reportes'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

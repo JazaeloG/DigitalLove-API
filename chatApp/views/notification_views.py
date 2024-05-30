@@ -1,12 +1,13 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.enums.tipo_usuario import TipoUsuario
-from api.models import Usuario
+from api.models import Reporte, Usuario
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from channels.layers import get_channel_layer
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
+from api.serializers.reporte_serializer import ReporteSerializer
 from api.serializers.usuarios_serializers import UsuarioBloquearSerializer
 from chatApp.models import Notificacion
 from chatApp.serializers.notification_serializers import NotificacionSerializer
@@ -68,3 +69,13 @@ def send_report_to_admin(request):
     
     return JsonResponse({'success': True})
 
+@extend_schema(
+    methods=['GET'],
+    tags=['Reporte'],
+    description="Recuperacion de anteriores reportes"  
+)
+@api_view(['GET'])
+def recuperar_reportes(request):
+    reportes = Reporte.objects.all().order_by('-fechaRegistro')
+    serializer = ReporteSerializer(reportes, many=True)
+    return JsonResponse(serializer.data, safe=False)

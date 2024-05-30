@@ -87,13 +87,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'digitalbd',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': '20.55.201.18',
-        'PORT': 5432
+        'USER': 'digitalbd_owner',
+        'PASSWORD': 'jglL0vaiSNz1',
+        'HOST': 'ep-withered-wood-a55hev1q.us-east-2.aws.neon.tech',
+        'PORT': 5432,
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     },
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

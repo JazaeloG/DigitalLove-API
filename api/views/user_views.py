@@ -71,7 +71,6 @@ def loginUsuario(request):
 
 @extend_schema(methods=['POST'], request=UsuarioAdminSerializer, responses={201: UsuarioSerializer}, tags=['Administrador'], description='Registrar un administrador')
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def registrarAdmin(request):
     serializer = UsuarioAdminSerializer(data=request.data)
     if serializer.is_valid():
