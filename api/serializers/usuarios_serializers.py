@@ -22,6 +22,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         fotos_data = validated_data.pop('fotos', [])
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
         for foto_data in fotos_data:
             if 'id' in foto_data:
                 foto_id = foto_data.pop('id')

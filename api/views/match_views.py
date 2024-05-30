@@ -55,8 +55,8 @@ def like_user(request):
 @extend_schema(methods=['POST'], request=MatchSerializer, responses={200: LikeSerializer}, tags=['Match'], description='Responder a un like')
 @api_view(['POST'])
 def respond_to_like(request):
-    receiver_id = request.data.get('recibe_id')
-    sender_id = request.data.get('envia_id')
+    receiver_id = request.data.get('envia_id')
+    sender_id = request.data.get('recibe_id')
     action = request.data.get('accion')
 
     try:
