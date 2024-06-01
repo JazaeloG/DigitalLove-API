@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+
+    <button onclick="connectChat()">Connect to Chat</button>
+    <button onclick="connectAdmin()">Connect as Admin</button>
+    <button onclick="connectNotifications(8)">Connect to notifications user 8</button>
+    <button onClick="connectNotifications(2)">Connect to notifications user 2</button>
+    <button onClick="connectNotifications(3)">Connect to notifications user 3</button>
+
+    <script>
+        let chatSocket;
+        let adminSocket;
+        let notificationSocket;
+
+        function connectChat() {
+            chatSocket = new WebSocket('ws://localhost:8000/ws/chat/1/');  
+
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Chat message received:', data);
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+        }
+
+        function connectAdmin() {
+            adminSocket = new WebSocket('ws://localhost:8000/ws/admin/reports/');
+
+            adminSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Admin report received:', data);
+            };
+
+            adminSocket.onclose = function(e) {
+                console.error('Admin socket closed unexpectedly');
+            };
+        }
+
+        function connectNotifications(userId) {
+            notificationSocket = new WebSocket(`ws://localhost:8000/ws/notifications/${userId}/`);
+
+            notificationSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Notification received:', data);
+            };
+
+            notificationSocket.onclose = function(e) {
+                console.error('Notification socket closed unexpectedly');
+            };
+        }
+    </script>
+</body>
+</html>

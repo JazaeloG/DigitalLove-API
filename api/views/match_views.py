@@ -6,7 +6,7 @@ from api.enums.sexo_usuario import SexoUsuario
 from api.helpers.match_helper import ErrorLike, ExitoLike
 from api.helpers.usuario_helper import ErroresUsuario
 from ..models import AtributosUsuario, Like, Match, PreferenciasUsuario, Usuario
-from chatApp.models import ChatPersonal
+from chatApp.models import ChatPersonal, Notificacion
 from ..serializers.match_serializers import LikeSerializer, MatchSerializer, UsuarioMatchSerializer
 from drf_spectacular.utils import extend_schema
 from django.db.models import Q
@@ -31,19 +31,19 @@ def like_user(request):
     like_serializer = LikeSerializer(data={'envia': envia_id, 'recibe': recibe_id})
     if like_serializer.is_valid():
         like_instance = like_serializer.save()
-
-        notification_data = {
-            'usuario_envia_id': envia_id,
-            'usuario_recibe_id': recibe_id,
-            'mensaje': f'{envia_user.usuario} te ha dado like!'
-        }
+        mensaje = f'{envia_user.usuario} te ha dado like!'
+        Notificacion.objects.create(
+            usuario_envia_id=envia_user,
+            usuario_recibe_id=recibe_user,
+            mensaje=mensaje
+        )
 
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'notifications_{recibe_id}',
             {
                 'type': 'notification_message',
-                'message': notification_data['mensaje']
+                'message': mensaje
             }
         )
 
@@ -62,7 +62,7 @@ def respond_to_like(request):
     try:
         receiver_user = Usuario.objects.get(id=receiver_id)
         sender_user = Usuario.objects.get(id=sender_id)
-    except Usuario.DoesNotExist:
+    except receiver_user.DoesNotExist:
         return Response({'message': ErrorLike.USUARIO_NO_EXISTE.value}, status=status.HTTP_400_BAD_REQUEST)
 
     like_instance = Like.objects.filter(envia_id=sender_id, recibe_id=receiver_id).first()
@@ -77,20 +77,22 @@ def respond_to_like(request):
     if action: 
         like_instance.aceptado = True
         like_instance.save()
+        mensaje = f'{receiver_user.usuario} ha aceptado tu like!'
         Match.objects.create(usuario1_id=receiver_id, usuario2_id=sender_id)
         ChatPersonal.objects.create(usuario_id=receiver_id, usuario_match_id=sender_id)
 
-        notification_data = {
-            'usuario_envia_id': receiver_id,
-            'usuario_recibe_id': sender_id,
-            'mensaje': f'{receiver_user.usuario} ha aceptado tu like!'
-        }
+        Notificacion.objects.create(
+            usuario_envia_id=receiver_user,
+            usuario_recibe_id=sender_user,
+            mensaje=mensaje
+        )
 
+        channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'notifications_{sender_id}',
             {
                 'type': 'notification_message',
-                'message': notification_data['mensaje']
+                'message': mensaje
             }
         )
 
@@ -98,17 +100,18 @@ def respond_to_like(request):
     else:
         like_instance.delete()
 
-        notification_data = {
-            'usuario_envia_id': receiver_id,
-            'usuario_recibe_id': sender_id,
-            'mensaje': f'{receiver_user.usuario} ha rechazado tu like.'
-        }
+        Notificacion.objects.create(
+            usuario_envia_id=receiver_id,
+            usuario_recibe_id=sender_id,
+            mensaje=mensaje
+        )
 
+        channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'notifications_{sender_id}',
             {
                 'type': 'notification_message',
-                'message': notification_data['mensaje']
+                'message': mensaje
             }
         )
 

@@ -14,7 +14,7 @@ from chatApp.serializers.notification_serializers import NotificacionSerializer
 
 @extend_schema(methods=['GET'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Listar notificaciones de un usuario')
 @api_view(['GET'])
-def listar_notificaciones(request,usuario_id):
+def listar_notificaciones(request, usuario_id):
     try:
         notificaciones = Notificacion.objects.filter(usuario_recibe_id=usuario_id)
         serializer = NotificacionSerializer(notificaciones, many=True)
@@ -24,25 +24,39 @@ def listar_notificaciones(request,usuario_id):
     
 @extend_schema(methods=['POST'], responses={200: NotificacionSerializer}, tags=['Notificaciones'], description='Enviar notificación a un usuario', request=NotificacionSerializer)
 @api_view(['POST'])
-def enviar_notificacion(request, user_id):
+def enviar_notificacion(request):
+    envia_id = request.data.get('usuario_envia_id')
+    user_id = request.data.get('usuario_recibe_id')
     try:
-        user = Usuario.objects.get(id=user_id)
+        usuario_envia = Usuario.objects.get(id=envia_id)
+        usuario_recibe = Usuario.objects.get(id=user_id)
     except Usuario.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'El usuario especificado no existe'}, status=400)
 
-    notification_message = request.data.get('notification')
+    notification_message = request.data.get('mensaje')
+    if not notification_message:
+        return JsonResponse({'success': False, 'error': 'No se proporcionó un mensaje de notificación'}, status=400)
 
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f'notifications_{user_id}',
-        {
-            'type': 'send_notification',
-            'notification': notification_message
-        }
-    )
+    try:
+        Notificacion.objects.create(
+            usuario_envia_id=usuario_envia,
+            usuario_recibe_id=usuario_recibe,
+            mensaje=notification_message
+        )
 
-    return JsonResponse({'success': True})
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'notifications_{user_id}',
+            {
+                'type': 'notification_message',
+                'message': notification_message
+            }
+        )
 
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
 @extend_schema(
     request=NotificacionSerializer,
     methods=['POST'],
@@ -72,7 +86,8 @@ def send_report_to_admin(request):
 @extend_schema(
     methods=['GET'],
     tags=['Reporte'],
-    description="Recuperacion de anteriores reportes"  
+    description="Recuperacion de anteriores reportes",
+    responses={200: ReporteSerializer}  
 )
 @api_view(['GET'])
 def recuperar_reportes(request):

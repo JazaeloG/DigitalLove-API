@@ -127,9 +127,10 @@ def get_usuarios_admin(request):
     serializer = UsuarioAdminSerializer(usuarios, many=True)
     return Response(serializer.data)
 
-@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: UsuarioSerializer}, request=UsuarioBloquearSerializer)
+
+@extend_schema(methods=['POST'], tags=['Usuario'], description='Bloquear un usuario', responses={200: UsuarioSerializer})
 @api_view(['POST'])
-def bloquear_usuario(usuario_id):
+def bloquear_usuario(request, usuario_id):
     try:
         usuario = Usuario.objects.get(pk=usuario_id)
     except Usuario.DoesNotExist:
@@ -141,6 +142,7 @@ def bloquear_usuario(usuario_id):
     usuario.save()
 
     return Response({'message': BloqueoHelper.BLOQUEO_REGISTRADO.value}, status=status.HTTP_200_OK)
+
 
 @extend_schema(methods=['PATCH'], tags=['Usuario'], description='Actualizar un usuario', request=UsuarioSerializer, responses={200: UsuarioSerializer})
 @api_view(['PATCH'])
