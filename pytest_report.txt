@@ -1,0 +1,687 @@
+==================================== ERRORS ====================================
+___________________ ERROR at teardown of test_get_user_chats ___________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7f198cc8d9d0>
+sql = 'SET CONSTRAINTS ALL IMMEDIATE', params = None
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='postgresql' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7f198cc8d9d0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+>               return self.cursor.execute(sql)
+E               psycopg2.errors.ForeignKeyViolation: insert or update on table "chatApp_chatpersonal" violates foreign key constraint "chatApp_chatpersonal_usuario_id_a8a095d6_fk_api_usuario_id"
+E               DETAIL:  Key (usuario_id)=(1) is not present in table "api_usuario".
+
+../env-dl/lib64/python3.8/site-packages/django/db/backends/utils.py:87: ForeignKeyViolation
+
+The above exception was the direct cause of the following exception:
+
+request = <SubRequest '_django_db_helper' for <Function test_get_user_chats>>
+django_db_setup = None
+django_db_blocker = <pytest_django.plugin.DjangoDbBlocker object at 0x7f1991128ee0>
+
+    @pytest.fixture()
+    def _django_db_helper(
+        request: pytest.FixtureRequest,
+        django_db_setup: None,
+        django_db_blocker: DjangoDbBlocker,
+    ) -> Generator[None, None, None]:
+        from django import VERSION
+    
+        if is_django_unittest(request):
+            yield
+            return
+    
+        marker = request.node.get_closest_marker("django_db")
+        if marker:
+            (
+                transactional,
+                reset_sequences,
+                databases,
+                serialized_rollback,
+                available_apps,
+            ) = validate_django_db(marker)
+        else:
+            (
+                transactional,
+                reset_sequences,
+                databases,
+                serialized_rollback,
+                available_apps,
+            ) = False, False, None, False, None
+    
+        transactional = (
+            transactional
+            or reset_sequences
+            or ("transactional_db" in request.fixturenames or "live_server" in request.fixturenames)
+        )
+        reset_sequences = reset_sequences or ("django_db_reset_sequences" in request.fixturenames)
+        serialized_rollback = serialized_rollback or (
+            "django_db_serialized_rollback" in request.fixturenames
+        )
+    
+        django_db_blocker.unblock()
+    
+        import django.db
+        import django.test
+    
+        if transactional:
+            test_case_class = django.test.TransactionTestCase
+        else:
+            test_case_class = django.test.TestCase
+    
+        _reset_sequences = reset_sequences
+        _serialized_rollback = serialized_rollback
+        _databases = databases
+        _available_apps = available_apps
+    
+        class PytestDjangoTestCase(test_case_class):  # type: ignore[misc,valid-type]
+            reset_sequences = _reset_sequences
+            serialized_rollback = _serialized_rollback
+            if _databases is not None:
+                databases = _databases
+            if _available_apps is not None:
+                available_apps = _available_apps
+    
+            # For non-transactional tests, skip executing `django.test.TestCase`'s
+            # `setUpClass`/`tearDownClass`, only execute the super class ones.
+            #
+            # `TestCase`'s class setup manages the `setUpTestData`/class-level
+            # transaction functionality. We don't use it; instead we (will) offer
+            # our own alternatives. So it only adds overhead, and does some things
+            # which conflict with our (planned) functionality, particularly, it
+            # closes all database connections in `tearDownClass` which inhibits
+            # wrapping tests in higher-scoped transactions.
+            #
+            # It's possible a new version of Django will add some unrelated
+            # functionality to these methods, in which case skipping them completely
+            # would not be desirable. Let's cross that bridge when we get there...
+            if not transactional:
+    
+                @classmethod
+                def setUpClass(cls) -> None:
+                    super(django.test.TestCase, cls).setUpClass()
+                    if VERSION < (4, 1):
+                        django.db.transaction.Atomic._ensure_durability = False
+    
+                @classmethod
+                def tearDownClass(cls) -> None:
+                    if VERSION < (4, 1):
+                        django.db.transaction.Atomic._ensure_durability = True
+                    super(django.test.TestCase, cls).tearDownClass()
+    
+        PytestDjangoTestCase.setUpClass()
+    
+        test_case = PytestDjangoTestCase(methodName="__init__")
+        test_case._pre_setup()
+    
+        yield
+    
+>       test_case._post_teardown()
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7f198cc8d9d0>
+sql = 'SET CONSTRAINTS ALL IMMEDIATE', params = None
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='postgresql' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7f198cc8d9d0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+>               return self.cursor.execute(sql)
+E               django.db.utils.IntegrityError: insert or update on table "chatApp_chatpersonal" violates foreign key constraint "chatApp_chatpersonal_usuario_id_a8a095d6_fk_api_usuario_id"
+E               DETAIL:  Key (usuario_id)=(1) is not present in table "api_usuario".
+
+../env-dl/lib64/python3.8/site-packages/django/db/backends/utils.py:87: IntegrityError
+=================================== FAILURES ===================================
+______________ ReportarUsuarioTest.test_reportar_usuario_success _______________
+
+self = <api.tests.test_api_views.ReportarUsuarioTest testMethod=test_reportar_usuario_success>
+mock_send_report_notification = <AsyncMock name='send_report_notification' id='139747704609040'>
+
+    @patch('chatApp.consumers.NotificationConsumer.send_report_notification')
+    def test_reportar_usuario_success(self, mock_send_report_notification):
+        data = {
+            "usuario_reportado_id": self.user.id,
+            "motivo": "Inappropriate behavior"
+        }
+        response = self.client.post(self.url, data, format='json')
+>       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+E       AssertionError: 400 != 201
+
+api/tests/test_api_views.py:92: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  django.request:log.py:241 Bad Request: /api/v1/reportarUsuario/
+__________ VerReportesTest.test_ver_reportes_with_date_filter_success __________
+
+self = <api.tests.test_api_views.VerReportesTest testMethod=test_ver_reportes_with_date_filter_success>
+
+    def test_ver_reportes_with_date_filter_success(self):
+        response = self.client.get(self.url, {'fecha_inicio': '2023-01-01', 'fecha_fin': '2023-01-31'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+>       self.assertEqual(len(response.data), 1)
+E       AssertionError: 0 != 1
+
+api/tests/test_api_views.py:122: AssertionError
+_____________ RegistrarUsuarioTest.test_registrar_usuario_success ______________
+
+self = <api.tests.test_api_views.RegistrarUsuarioTest testMethod=test_registrar_usuario_success>
+
+    def test_registrar_usuario_success(self):
+        data = {
+            "usuario": "newuser",
+            "password": "newpassword"
+        }
+        response = self.client.post(self.url, data, format='json')
+>       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+E       AssertionError: 400 != 201
+
+api/tests/test_api_views.py:170: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  django.request:log.py:241 Bad Request: /api/v1/registrarUsuario/
+_______________ RegistrarAdminTest.test_registrar_admin_success ________________
+
+self = <api.tests.test_api_views.RegistrarAdminTest testMethod=test_registrar_admin_success>
+
+    def test_registrar_admin_success(self):
+        data = {
+            "usuario": "newadmin",
+            "password": "newpassword"
+        }
+        response = self.client.post(self.url, data, format='json')
+>       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+E       AssertionError: 400 != 201
+
+api/tests/test_api_views.py:215: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  django.request:log.py:241 Bad Request: /api/v1/registrarAdmin/
+____________________ TestChatConsumer.test_receive_message _____________________
+
+self = <test_chatApp_consumers.TestChatConsumer object at 0x7f198d756670>
+
+    async def test_receive_message(self):
+>       user1 = await sync_to_async(User.objects.create_user)(
+            username='user1', password='password1', tipoUsuario='USUARIO'
+        )
+
+chatApp/tests/test_chatApp_consumers.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../env-dl/lib64/python3.8/site-packages/asgiref/sync.py:468: in __call__
+    ret = await asyncio.shield(exec_coro)
+/usr/lib64/python3.8/concurrent/futures/thread.py:57: in run
+    result = self.fn(*self.args, **self.kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asgiref.sync.SyncToAsync object at 0x7f198c137d30>
+loop = <_UnixSelectorEventLoop running=False closed=False debug=False>
+exc_info = (None, None, None), task_context = []
+func = <built-in method run of Context object at 0x7f198c13be00>
+args = (functools.partial(<bound method CustomUserManager.create_user of <api.models.CustomUserManager object at 0x7f198df277f0>>, username='user1', password='password1', tipoUsuario='USUARIO'),)
+kwargs = {}, __traceback_hide__ = True
+
+    def thread_handler(self, loop, exc_info, task_context, func, *args, **kwargs):
+        """
+        Wraps the sync application with exception handling.
+        """
+    
+        __traceback_hide__ = True  # noqa: F841
+    
+        # Set the threadlocal for AsyncToSync
+        self.threadlocal.main_event_loop = loop
+        self.threadlocal.main_event_loop_pid = os.getpid()
+        self.threadlocal.task_context = task_context
+    
+        # Run the function
+        # If we have an exception, run the function inside the except block
+        # after raising it so exc_info is correctly populated.
+        if exc_info[1]:
+            try:
+                raise exc_info[1]
+            except BaseException:
+                return func(*args, **kwargs)
+        else:
+>           return func(*args, **kwargs)
+E           TypeError: create_user() missing 2 required positional arguments: 'usuario' and 'email'
+
+../env-dl/lib64/python3.8/site-packages/asgiref/sync.py:522: TypeError
+____________________ TestNotificationConsumer.test_connect _____________________
+
+self = <channels.testing.websocket.WebsocketCommunicator object at 0x7f198c0d28e0>
+timeout = 1
+
+    async def receive_output(self, timeout=1):
+        """
+        Receives a single message from the application, with optional timeout.
+        """
+        # Make sure there's not an exception to raise from the task
+        if self.future.done():
+            self.future.result()
+        # Wait and receive the message
+        try:
+            async with async_timeout(timeout):
+>               return await self.output_queue.get()
+
+../env-dl/lib64/python3.8/site-packages/asgiref/testing.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Queue at 0x7f198c0c05e0 maxsize=0>
+
+    async def get(self):
+        """Remove and return an item from the queue.
+    
+        If queue is empty, wait until an item is available.
+        """
+        while self.empty():
+            getter = self._loop.create_future()
+            self._getters.append(getter)
+            try:
+>               await getter
+E               asyncio.exceptions.CancelledError
+
+/usr/lib64/python3.8/asyncio/queues.py:163: CancelledError
+
+During handling of the above exception, another exception occurred:
+
+self = <channels.testing.websocket.WebsocketCommunicator object at 0x7f198c0d28e0>
+timeout = 1
+
+    async def receive_output(self, timeout=1):
+        """
+        Receives a single message from the application, with optional timeout.
+        """
+        # Make sure there's not an exception to raise from the task
+        if self.future.done():
+            self.future.result()
+        # Wait and receive the message
+        try:
+            async with async_timeout(timeout):
+>               return await self.output_queue.get()
+
+../env-dl/lib64/python3.8/site-packages/asgiref/testing.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../env-dl/lib64/python3.8/site-packages/asgiref/timeout.py:71: in __aexit__
+    self._do_exit(exc_type)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asgiref.timeout.timeout object at 0x7f198c0c0c10>
+exc_type = <class 'asyncio.exceptions.CancelledError'>
+
+    def _do_exit(self, exc_type: Type[BaseException]) -> None:
+        if exc_type is asyncio.CancelledError and self._cancelled:
+            self._cancel_handler = None
+            self._task = None
+>           raise asyncio.TimeoutError
+E           asyncio.exceptions.TimeoutError
+
+../env-dl/lib64/python3.8/site-packages/asgiref/timeout.py:108: TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_chatApp_consumers.TestNotificationConsumer object at 0x7f198d756d00>
+
+    async def test_connect(self):
+        communicator = WebsocketCommunicator(
+            ProtocolTypeRouter({
+                'websocket': URLRouter(websocket_urlpatterns),
+            }),
+            "/ws/notifications/1/"
+        )
+>       connected, _ = await communicator.connect()
+
+chatApp/tests/test_chatApp_consumers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <QuerySet []>, args = (), kwargs = {'id': '1'}, clone = <QuerySet []>
+limit = 21, num = 0
+
+    def get(self, *args, **kwargs):
+        """
+        Perform the query and return a single object matching the given
+        keyword arguments.
+        """
+        if self.query.combinator and (args or kwargs):
+            raise NotSupportedError(
+                "Calling QuerySet.get(...) with filters after %s() is not "
+                "supported." % self.query.combinator
+            )
+        clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
+        if self.query.can_filter() and not self.query.distinct_fields:
+            clone = clone.order_by()
+        limit = None
+        if (
+            not clone.query.select_for_update
+            or connections[clone.db].features.supports_select_for_update_with_limit
+        ):
+            limit = MAX_GET_RESULTS
+            clone.query.set_limits(high=limit)
+        num = len(clone)
+        if num == 1:
+            return clone._result_cache[0]
+        if not num:
+>           raise self.model.DoesNotExist(
+                "%s matching query does not exist." % self.model._meta.object_name
+            )
+E           api.models.Usuario.DoesNotExist: Usuario matching query does not exist.
+
+../env-dl/lib64/python3.8/site-packages/django/db/models/query.py:637: DoesNotExist
+_______________ TestNotificationConsumer.test_send_notification ________________
+
+self = <test_chatApp_consumers.TestNotificationConsumer object at 0x7f198d75c1c0>
+
+    async def test_send_notification(self):
+>       user1 = await sync_to_async(User.objects.create_user)(
+            username='user1', password='password1', tipoUsuario='USUARIO'
+        )
+
+chatApp/tests/test_chatApp_consumers.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../env-dl/lib64/python3.8/site-packages/asgiref/sync.py:468: in __call__
+    ret = await asyncio.shield(exec_coro)
+/usr/lib64/python3.8/concurrent/futures/thread.py:57: in run
+    result = self.fn(*self.args, **self.kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asgiref.sync.SyncToAsync object at 0x7f198bedf940>
+loop = <_UnixSelectorEventLoop running=False closed=False debug=False>
+exc_info = (None, None, None), task_context = []
+func = <built-in method run of Context object at 0x7f198d344ac0>
+args = (functools.partial(<bound method CustomUserManager.create_user of <api.models.CustomUserManager object at 0x7f198df277f0>>, username='user1', password='password1', tipoUsuario='USUARIO'),)
+kwargs = {}, __traceback_hide__ = True
+
+    def thread_handler(self, loop, exc_info, task_context, func, *args, **kwargs):
+        """
+        Wraps the sync application with exception handling.
+        """
+    
+        __traceback_hide__ = True  # noqa: F841
+    
+        # Set the threadlocal for AsyncToSync
+        self.threadlocal.main_event_loop = loop
+        self.threadlocal.main_event_loop_pid = os.getpid()
+        self.threadlocal.task_context = task_context
+    
+        # Run the function
+        # If we have an exception, run the function inside the except block
+        # after raising it so exc_info is correctly populated.
+        if exc_info[1]:
+            try:
+                raise exc_info[1]
+            except BaseException:
+                return func(*args, **kwargs)
+        else:
+>           return func(*args, **kwargs)
+E           TypeError: create_user() missing 2 required positional arguments: 'usuario' and 'email'
+
+../env-dl/lib64/python3.8/site-packages/asgiref/sync.py:522: TypeError
+_____________________________ test_get_user_chats ______________________________
+
+api_client = <rest_framework.test.APIClient object at 0x7f198cc19a90>
+
+    @pytest.mark.django_db
+    def test_get_user_chats(api_client):
+        user_id = 1
+        mixer.blend(ChatPersonal, usuario_id=user_id)
+        mixer.blend(ChatPersonal, usuario_match_id=user_id)
+    
+>       url = reverse('get_user_chats', kwargs={'usuario_id': user_id})
+
+chatApp/tests/test_chatApp_views.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../env-dl/lib64/python3.8/site-packages/django/urls/base.py:88: in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <URLResolver 'digitalAPI.urls' (None:None) '^/'>
+lookup_view = 'get_user_chats', _prefix = '/', args = ()
+kwargs = {'usuario_id': 1}, possibilities = []
+
+    def _reverse_with_prefix(self, lookup_view, _prefix, *args, **kwargs):
+        if args and kwargs:
+            raise ValueError("Don't mix *args and **kwargs in call to reverse()!")
+    
+        if not self._populated:
+            self._populate()
+    
+        possibilities = self.reverse_dict.getlist(lookup_view)
+    
+        for possibility, pattern, defaults, converters in possibilities:
+            for result, params in possibility:
+                if args:
+                    if len(args) != len(params):
+                        continue
+                    candidate_subs = dict(zip(params, args))
+                else:
+                    if set(kwargs).symmetric_difference(params).difference(defaults):
+                        continue
+                    matches = True
+                    for k, v in defaults.items():
+                        if k in params:
+                            continue
+                        if kwargs.get(k, v) != v:
+                            matches = False
+                            break
+                    if not matches:
+                        continue
+                    candidate_subs = kwargs
+                # Convert the candidate subs to text using Converter.to_url().
+                text_candidate_subs = {}
+                match = True
+                for k, v in candidate_subs.items():
+                    if k in converters:
+                        try:
+                            text_candidate_subs[k] = converters[k].to_url(v)
+                        except ValueError:
+                            match = False
+                            break
+                    else:
+                        text_candidate_subs[k] = str(v)
+                if not match:
+                    continue
+                # WSGI provides decoded URLs, without %xx escapes, and the URL
+                # resolver operates on such URLs. First substitute arguments
+                # without quoting to build a decoded URL and look for a match.
+                # Then, if we have a match, redo the substitution with quoted
+                # arguments in order to return a properly encoded URL.
+                candidate_pat = _prefix.replace("%", "%%") + result
+                if re.search(
+                    "^%s%s" % (re.escape(_prefix), pattern),
+                    candidate_pat % text_candidate_subs,
+                ):
+                    # safe characters from `pchar` definition of RFC 3986
+                    url = quote(
+                        candidate_pat % text_candidate_subs,
+                        safe=RFC3986_SUBDELIMS + "/~:@",
+                    )
+                    # Don't allow construction of scheme relative urls.
+                    return escape_leading_slashes(url)
+        # lookup_view can be URL name or callable, but callables are not
+        # friendly in error messages.
+        m = getattr(lookup_view, "__module__", None)
+        n = getattr(lookup_view, "__name__", None)
+        if m is not None and n is not None:
+            lookup_view_s = "%s.%s" % (m, n)
+        else:
+            lookup_view_s = lookup_view
+    
+        patterns = [pattern for (_, pattern, _, _) in possibilities]
+        if patterns:
+            if args:
+                arg_msg = "arguments '%s'" % (args,)
+            elif kwargs:
+                arg_msg = "keyword arguments '%s'" % kwargs
+            else:
+                arg_msg = "no arguments"
+            msg = "Reverse for '%s' with %s not found. %d pattern(s) tried: %s" % (
+                lookup_view_s,
+                arg_msg,
+                len(patterns),
+                patterns,
+            )
+        else:
+            msg = (
+                "Reverse for '%(view)s' not found. '%(view)s' is not "
+                "a valid view function or pattern name." % {"view": lookup_view_s}
+            )
+>       raise NoReverseMatch(msg)
+E       django.urls.exceptions.NoReverseMatch: Reverse for 'get_user_chats' not found. 'get_user_chats' is not a valid view function or pattern name.
+
+../env-dl/lib64/python3.8/site-packages/django/urls/resolvers.py:828: NoReverseMatch
+__________________________ test_listar_notificaciones __________________________
+
+api_client = <rest_framework.test.APIClient object at 0x7f198c078910>
+
+    @pytest.mark.django_db
+    def test_listar_notificaciones(api_client):
+        user_id = 1
+        mixer.blend(Notificacion, usuario_id=user_id)
+    
+        url = reverse('listar_notificaciones', kwargs={'usuario_id': user_id})
+>       response = api_client.get(url)
+
+chatApp/tests/test_chatApp_views.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.models.sql.query.Query object at 0x7f198cb5c940>
+names = ['usuario_id'], opts = <Options for Notificacion>, allow_many = True
+fail_on_missing = False
+
+    def names_to_path(self, names, opts, allow_many=True, fail_on_missing=False):
+        """
+        Walk the list of names and turns them into PathInfo tuples. A single
+        name in 'names' can generate multiple PathInfos (m2m, for example).
+    
+        'names' is the path of names to travel, 'opts' is the model Options we
+        start the name resolving from, 'allow_many' is as for setup_joins().
+        If fail_on_missing is set to True, then a name that can't be resolved
+        will generate a FieldError.
+    
+        Return a list of PathInfo tuples. In addition return the final field
+        (the last used join field) and target (which is a field guaranteed to
+        contain the same value as the final field). Finally, return those names
+        that weren't found (which are likely transforms and the final lookup).
+        """
+        path, names_with_path = [], []
+        for pos, name in enumerate(names):
+            cur_names_with_path = (name, [])
+            if name == "pk":
+                name = opts.pk.name
+    
+            field = None
+            filtered_relation = None
+            try:
+                if opts is None:
+                    raise FieldDoesNotExist
+                field = opts.get_field(name)
+            except FieldDoesNotExist:
+                if name in self.annotation_select:
+                    field = self.annotation_select[name].output_field
+                elif name in self._filtered_relations and pos == 0:
+                    filtered_relation = self._filtered_relations[name]
+                    if LOOKUP_SEP in filtered_relation.relation_name:
+                        parts = filtered_relation.relation_name.split(LOOKUP_SEP)
+                        filtered_relation_path, field, _, _ = self.names_to_path(
+                            parts,
+                            opts,
+                            allow_many,
+                            fail_on_missing,
+                        )
+                        path.extend(filtered_relation_path[:-1])
+                    else:
+                        field = opts.get_field(filtered_relation.relation_name)
+            if field is not None:
+                # Fields that contain one-to-many relations with a generic
+                # model (like a GenericForeignKey) cannot generate reverse
+                # relations and therefore cannot be used for reverse querying.
+                if field.is_relation and not field.related_model:
+                    raise FieldError(
+                        "Field %r does not generate an automatic reverse "
+                        "relation and therefore cannot be used for reverse "
+                        "querying. If it is a GenericForeignKey, consider "
+                        "adding a GenericRelation." % name
+                    )
+                try:
+                    model = field.model._meta.concrete_model
+                except AttributeError:
+                    # QuerySet.annotate() may introduce fields that aren't
+                    # attached to a model.
+                    model = None
+            else:
+                # We didn't find the current field, so move position back
+                # one step.
+                pos -= 1
+                if pos == -1 or fail_on_missing:
+                    available = sorted(
+                        [
+                            *get_field_names_from_opts(opts),
+                            *self.annotation_select,
+                            *self._filtered_relations,
+                        ]
+                    )
+>                   raise FieldError(
+                        "Cannot resolve keyword '%s' into field. "
+                        "Choices are: %s" % (name, ", ".join(available))
+                    )
+E                   django.core.exceptions.FieldError: Cannot resolve keyword 'usuario_id' into field. Choices are: fecha_creacion, id, mensaje, usuario_envia_id, usuario_envia_id_id, usuario_recibe_id, usuario_recibe_id_id
+
+../env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py:1725: FieldError
+------------------------------ Captured log call -------------------------------
+ERROR    django.request:log.py:241 Internal Server Error: /api/v1/notificaciones/1/
+Traceback (most recent call last):
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/DigitalLove-API/chatApp/views/notification_views.py", line 18, in listar_notificaciones
+    notificaciones = Notificacion.objects.filter(usuario_id=usuario_id)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/query.py", line 1436, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/query.py", line 1454, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/query.py", line 1461, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py", line 1546, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py", line 1577, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py", line 1427, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py", line 1237, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+  File "/home/sgerardov/Dev/School/ProyectoDL/env-dl/lib64/python3.8/site-packages/django/db/models/sql/query.py", line 1725, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'usuario_id' into field. Choices are: fecha_creacion, id, mensaje, usuario_envia_id, usuario_envia_id_id, usuario_recibe_id, usuario_recibe_id_id
+=========================== short test summary info ============================
+FAILED api/tests/test_api_views.py::ReportarUsuarioTest::test_reportar_usuario_success
+FAILED api/tests/test_api_views.py::VerReportesTest::test_ver_reportes_with_date_filter_success
+FAILED api/tests/test_api_views.py::RegistrarUsuarioTest::test_registrar_usuario_success
+FAILED api/tests/test_api_views.py::RegistrarAdminTest::test_registrar_admin_success
+FAILED chatApp/tests/test_chatApp_consumers.py::TestChatConsumer::test_receive_message
+FAILED chatApp/tests/test_chatApp_consumers.py::TestNotificationConsumer::test_connect
+FAILED chatApp/tests/test_chatApp_consumers.py::TestNotificationConsumer::test_send_notification
+FAILED chatApp/tests/test_chatApp_views.py::test_get_user_chats - django.urls...
+FAILED chatApp/tests/test_chatApp_views.py::test_listar_notificaciones - djan...
+ERROR chatApp/tests/test_chatApp_views.py::test_get_user_chats - django.db.ut...
+============== 9 failed, 50 passed, 6 warnings, 1 error in 11.99s ==============

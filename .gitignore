@@ -1,0 +1,6 @@
+/fotos/
+fotos/
+media/
+/media/
+.pytest_cache/
+/.pytest_cache/

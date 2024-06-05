@@ -6,10 +6,17 @@ def validar_existencia_usuario(usuario):
         return False
     return True
 
+def limpiar_telefono(telefono):
+    telefono_limpio = re.sub(r'[^\d]', '', telefono)
+    return telefono_limpio
+
 def validar_formato_telefono(telefono):
-    if not telefono.isdigit() or len(telefono) < 10 or len(telefono) > 15:
+    telefono_limpio = limpiar_telefono(telefono)
+
+    if len(telefono_limpio) >= 10 and len(telefono_limpio) <= 15:
+        return True
+    else:
         return False
-    return True
 
 def validar_formato_correo(correo):
     correo_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'

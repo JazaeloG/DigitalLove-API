@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -67,21 +68,21 @@ WSGI_APPLICATION = 'digitalAPI.wsgi.application'
 
 
 # Configuracion de credenciales de la base de datos
+# Prod
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'koyebdb',
-        'USER': 'admin',
-        'PASSWORD': 'Hkyjm4ZUgWX0',
-        'HOST': 'ep-sparkling-silence-a2htxk8z.eu-central-1.pg.koyeb.app',
+        'NAME': 'digitalbd',
+        'USER': 'digitalbd_owner',
+        'PASSWORD': 'jglL0vaiSNz1',
+        'HOST': 'ep-withered-wood-a55hev1q.us-east-2.aws.neon.tech',
         'PORT': 5432,
         'OPTIONS': {
             'sslmode': 'require',
         },
     },
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -147,9 +148,18 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API de DigitalLove',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
+
+# EndPoints de IA
+IA_COMPARACION= 'http://localhost:5001/'
+IA_EXTRACCION= 'http://localhost:5000/'
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

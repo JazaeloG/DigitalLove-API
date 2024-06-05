@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from ..models import Notificacion
+
+from chatApp.models import Notificacion
 
 class NotificacionSerializer(serializers.ModelSerializer):
     class Meta:
