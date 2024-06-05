@@ -8,6 +8,7 @@ class ExitoRegistro(Enum):
 class ErroresRegistro(Enum):
     MENSAJE = 'Error al registrar usuario'
     USUARIO_YA_EXISTE = 'Este usuario ya existe'
+    CORREO_YA_EXISTE = 'Este correo ya está registrado'
     FORMATO_TELEFONO = 'Formato de teléfono inválido'
     FORMATO_EMAIL = 'Formato de correo inválido'
     FORMATO_PASSWORD = 'Formato de contraseña inválido'

@@ -11,9 +11,11 @@ Ejemplos: Vistas de función
 2. Añadir una URL a urlpatterns: path('blog/', include('blog.urls')) 
 
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
