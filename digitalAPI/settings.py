@@ -74,13 +74,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'digitalbd',
-        'USER': 'digitalbd_owner',
-        'PASSWORD': 'jglL0vaiSNz1',
-        'HOST': 'ep-withered-wood-a55hev1q.us-east-2.aws.neon.tech',
-        'PORT': 5432,
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': '20.55.201.18',
+        'PORT': 5432
     },
 }
 AUTH_PASSWORD_VALIDATORS = [
@@ -157,8 +154,8 @@ SIMPLE_JWT = {
 }
 
 # EndPoints de IA
-IA_COMPARACION= 'http://localhost:5001/'
-IA_EXTRACCION= 'http://localhost:5000/'
+IA_COMPARACION= 'http://20.55.201.18:5001/'
+IA_EXTRACCION= 'http://20.55.201.18:5000/'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_URL = '/media/'

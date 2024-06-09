@@ -132,6 +132,7 @@ def encontrar_usuarios(request, usuario_id):
         usuario = Usuario.objects.get(id=usuario_id)
         preferencias = PreferenciasUsuario.objects.get(usuario=usuario)
         atributos_usuarios = AtributosUsuario.objects.exclude(usuario=usuario)
+        
         if usuario.orientacionSexual == OrientacionSexual.HETEROSEXUAL.value:
             if usuario.sexo == SexoUsuario.FEMENINO.value:
                 atributos_usuarios = atributos_usuarios.filter(usuario__sexo=SexoUsuario.MASCULINO.value)
@@ -144,7 +145,7 @@ def encontrar_usuarios(request, usuario_id):
 
         for atributos in atributos_usuarios:
             puntuacion = 0
-            
+
             if preferencias.conLentes == atributos.lentes:
                 puntuacion += 1
             if preferencias.conCaraOvalada == atributos.caraOvalada:
@@ -160,8 +161,10 @@ def encontrar_usuarios(request, usuario_id):
                 'usuario': atributos.usuario,
                 'puntuacion': puntuacion
             })
+
         usuarios_puntuacion.sort(key=lambda x: x['puntuacion'], reverse=True)
         usuarios_serializados = []
+
         for entry in usuarios_puntuacion:
             usuario_data = UsuarioMatchSerializer(entry['usuario']).data
             usuario_data['puntuacion'] = entry['puntuacion']

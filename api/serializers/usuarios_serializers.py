@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from api.enums.etiquetas_usuario import Etiquetas
 from api.models import FotoUsuario, PreferenciasUsuario, Usuario
 
 class FotoUsuarioSerializer(serializers.ModelSerializer):
@@ -56,12 +57,45 @@ class UsuarioBloquearSerializer(serializers.Serializer):
     usuario_id = serializers.IntegerField()
 
 class PreferenciasUsuarioSerializer(serializers.ModelSerializer):
+    etiquetas = serializers.ListField(
+        child=serializers.ChoiceField(choices=[etiqueta.value for etiqueta in Etiquetas]),
+        max_length=6,
+        allow_empty=True
+    )
+    
     class Meta:
         model = PreferenciasUsuario
         exclude = ['usuario']
+
+    def update(self, instance, validated_data):
+        etiquetas = validated_data.pop('etiquetas', None) 
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        
+        if etiquetas is not None:
+            instance.etiquetas = etiquetas
+            instance.save()
+        return instance
+
+    def validate_etiquetas(self, value):
+        if len(value) > 6:
+            raise serializers.ValidationError("No puedes seleccionar más de 6 etiquetas.")
+        return value
 
 class EliminarFotoSerializer(serializers.Serializer):
     pass
 
 class AgregarFotoSerializer(serializers.Serializer):
-    pass
+    foto = serializers.ImageField()
+
+    def validate_foto(self, value):
+        if value is None:
+            raise serializers.ValidationError("La foto no puede estar vacía.")
+        return value
+    
+class UsuarioMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id']

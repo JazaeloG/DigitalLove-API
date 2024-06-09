@@ -16,7 +16,6 @@ from asgiref.sync import async_to_sync
 
 @extend_schema(description='Reportar usuario', responses={201: ReporteSerializer}, tags=['Reporte'], request=ReporteSerializer)
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def reportar_usuario(request):
     serializer = ReporteSerializer(data=request.data)
     if serializer.is_valid():

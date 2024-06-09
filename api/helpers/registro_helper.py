@@ -18,5 +18,7 @@ class ErroresRegistro(Enum):
     FORMATO_APELLIDO_PATERNO = 'Formato de apellido paterno inválido'
     FORMATO_APELLIDO_MATERNO = 'Formato de apellido materno inválido'
     FORMATO_UBICACION = 'Formato de ubicación inválido'
+    ERROR_EXTRAER_ATRIBUTOS = 'Error al extraer atributos'
+    ERROR_COMPARAR_ROSTROS = 'Error al comparar rostros'
 
 

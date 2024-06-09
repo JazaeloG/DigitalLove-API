@@ -245,3 +245,24 @@ def agregarFotoUsuario(request, usuario_id):
         return Response({'message': ExitoUsuario.FOTO_REGISTRADA.value}, status=status.HTTP_201_CREATED)
     except Usuario.DoesNotExist:
         return Response({'message': ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@extend_schema(
+    methods=['GET'],
+    tags=['Preferencias'],
+    description='Obtener preferencias de usuario',
+    responses={200: PreferenciasUsuarioSerializer}
+)
+@api_view(['GET'])
+def obtener_preferencias(request, usuario_id):
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+        preferencias = PreferenciasUsuario.objects.get(usuario=usuario)
+        serializer = PreferenciasUsuarioSerializer(preferencias)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Usuario.DoesNotExist:
+        return Response({'error': ErroresUsuario.USUARIO_NO_ENCONTRADO.value}, status=status.HTTP_404_NOT_FOUND)
+    except PreferenciasUsuario.DoesNotExist:
+        return Response({'error': ErroresUsuario.PREFERENCIAS_NO_ENCONTRADAS.value}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

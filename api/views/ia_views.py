@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 from rest_framework.response import Response
+from api.helpers.registro_helper import ErroresRegistro
 from api.models import AtributosUsuario, Usuario
 from api.serializers.ia_serlializers import AtributosSerializer, CompararRostrosSerializer
 import requests
@@ -63,7 +64,7 @@ def extraer_atributos(request, usuario_id):
 
         return Response(desired_attributes, status=status.HTTP_200_OK, content_type='application/json')
     else:  
-        return Response({'message': 'Error al extraer atributos'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message':ErroresRegistro.ERROR_EXTRAER_ATRIBUTOS.value}, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
     methods=['POST'], 
@@ -89,4 +90,4 @@ def comparar_rostros(request):
         response_json = json.loads(respuesta_ia.content)
         return Response(response_json, status=status.HTTP_200_OK, content_type='application/json')
     else:  
-        return Response({'message': 'Error al comparar rostros'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': ErroresRegistro.ERROR_COMPARAR_ROSTROS.value}, status=status.HTTP_400_BAD_REQUEST)

@@ -10,6 +10,9 @@ class ErroresUsuario(Enum):
     USUARIO_NO_AUTORIZADO = 'Usuario no autorizado'
     PREFERENCIAS_NO_ENCONTRADAS = 'Preferencias no encontradas'
     FOTO_NO_ENCONTRADA = 'Foto no encontrada'
+    CHATS_NO_ENCONTRADOS = 'Chats no encontrados'
+    NOTIFICACIONES_NO_ENCONTRADAS = 'Notificaciones no encontradas'
+    NO_MENSAJE_NOTIFICACION = 'No hay mensaje en la notificación'
 
 class ExitoUsuario(Enum):
     USUARIO_REGISTRADO = 'Usuario registrado'
@@ -23,3 +26,4 @@ class ExitoUsuario(Enum):
     FOTO_ACTUALIZADA = 'Foto actualizada'
     FOTO_ELIMINADA = 'Foto eliminada'
     FOTO_REGISTRADA = 'Foto registrada'
+

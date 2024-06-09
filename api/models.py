@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
 from api.enums.estado_usuario import EstadoUsuario
+from api.enums.etiquetas_usuario import Etiquetas
 from api.enums.orientacion_sexual import OrientacionSexual, SexoPreferido
 from api.enums.sexo_usuario import SexoUsuario
 from api.enums.tipo_usuario import TipoUsuario
@@ -8,6 +9,7 @@ from api.enums.estados_pais import EstadosMexico
 from api.enums.motivos_reporte_ import MotivosReporte
 from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator, MaxValueValidator, EmailValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.postgres.fields import ArrayField
 from api.enums.cabello_preferencias import CabelloColorPreferencias, CabelloTipoPreferencias
 
 class CustomUserManager(BaseUserManager):
@@ -113,3 +115,4 @@ class PreferenciasUsuario(models.Model):
     colorCabello = models.CharField(max_length=50, choices=[(cabello.name, cabello.value) for cabello in CabelloColorPreferencias], default=CabelloColorPreferencias.BLACK_HAIR.value)
     tipoCabello = models.CharField(max_length=50, choices=[(tipo.name, tipo.value) for tipo in CabelloTipoPreferencias], default=CabelloTipoPreferencias.STRAIGHT_HAIR.value)
     sexoPreferido = models.CharField(max_length=20, choices=[(sexo.name, sexo.value) for sexo in SexoPreferido], default=SexoPreferido.AMBOS.value)
+    etiquetas = ArrayField(models.CharField(max_length=50),choices=[(etiqueta.name, etiqueta.value) for etiqueta in Etiquetas], default=list, blank=True, null=True)
